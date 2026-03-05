@@ -1,0 +1,47 @@
+# Dependencies
+node_modules/
+backend/venv/
+
+# Build output
+frontend-react/dist/
+
+# Environment
+.env
+.env.local
+*.env
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+
+# Vite
+frontend-react/.vite/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Old frontend
+frontend/node_modules/
+frontend/dist/
+
+# Screenshots
+*.png
+
+# Playwright MCP logs
+.playwright-mcp/
+
+# Old frontend
+frontend/
+
+# Logs
+*.log
+server.log

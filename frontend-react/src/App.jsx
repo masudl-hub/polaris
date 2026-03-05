@@ -1,0 +1,100 @@
+import { useState, useEffect, useRef, useCallback } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import TopBar from './components/TopBar'
+import Compose from './components/Compose'
+import Analyze from './components/Analyze'
+import Results from './components/Results'
+import Toast from './components/Toast'
+import { useTheme } from './hooks/useTheme'
+import { useAnalysis } from './hooks/useAnalysis'
+import { useSessions } from './hooks/useSessions'
+import { viewTransition } from './lib/motion'
+
+export default function App() {
+  const [view, setView] = useState('compose')
+  const [dark, toggleTheme] = useTheme()
+  const analysis = useAnalysis()
+  const sessions = useSessions()
+  const toastRef = useRef()
+  const platformRef = useRef('Meta')
+  const inputsRef = useRef(null)
+
+  useEffect(() => { sessions.refresh() }, [])
+
+  const handleSubmit = useCallback((formData, platform, inputs) => {
+    platformRef.current = platform
+    inputsRef.current = inputs || null
+    setView('analyze')
+    analysis.run(
+      formData,
+      (store) => {
+        toastRef.current?.show('Analysis complete', 'success')
+        sessions.save(store, platform, inputsRef.current).then(() => sessions.refresh())
+        setView('results')
+      },
+      (err) => {
+        toastRef.current?.show(err, 'error')
+        setView('compose')
+      },
+    )
+  }, [analysis, sessions])
+
+  const handleSessionClick = useCallback(async (id) => {
+    const record = await sessions.load(id)
+    if (record?.store) {
+      analysis.loadStore(record.store)
+      setView('results')
+      sessions.refresh()
+    }
+  }, [analysis, sessions])
+
+  const handleBack = useCallback(() => setView('compose'), [])
+
+  return (
+    <div className="h-screen flex flex-col bg-[#f4f5f7] dark:bg-[#111113] text-gray-900 dark:text-gray-100 transition-colors duration-200 antialiased">
+      <Toast ref={toastRef} />
+      <TopBar
+        view={view}
+        dark={dark}
+        sessions={sessions.sessions}
+        currentSessionId={sessions.currentId}
+        onBack={handleBack}
+        onSessionClick={handleSessionClick}
+        onToggleTheme={toggleTheme}
+      />
+      <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+        <AnimatePresence mode="wait">
+          {view === 'compose' && (
+            <motion.div
+              key="compose"
+              {...viewTransition}
+            >
+              <Compose loading={analysis.loading} onSubmit={handleSubmit} />
+            </motion.div>
+          )}
+          {view === 'analyze' && (
+            <motion.div
+              key="analyze"
+              {...viewTransition}
+            >
+              <Analyze
+                steps={analysis.store.steps}
+                stepCount={analysis.stepCount}
+                currentStep={analysis.currentStep}
+                progress={analysis.progress}
+              />
+            </motion.div>
+          )}
+          {view === 'results' && (
+            <motion.div
+              key="results"
+              {...viewTransition}
+            >
+              <Results store={analysis.store} />
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </main>
+    </div>
+  )
+}

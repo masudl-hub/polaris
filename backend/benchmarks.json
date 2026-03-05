@@ -1,0 +1,82 @@
+{
+  "e-commerce": {
+    "meta": { "avg_cpc": 0.97, "avg_ctr": 1.11, "avg_cvr": 9.21, "avg_cpa": 10.53 },
+    "google": { "avg_cpc": 1.16, "avg_ctr": 2.69, "avg_cvr": 2.81, "avg_cpa": 41.28 },
+    "tiktok": { "avg_cpc": 0.64, "avg_ctr": 1.45, "avg_cvr": 1.85, "avg_cpa": 34.59 },
+    "x": { "avg_cpc": 0.58, "avg_ctr": 0.86, "avg_cvr": 1.20, "avg_cpa": 48.33 },
+    "linkedin": { "avg_cpc": 3.86, "avg_ctr": 0.44, "avg_cvr": 2.35, "avg_cpa": 164.26 },
+    "snapchat": { "avg_cpc": 0.45, "avg_ctr": 1.02, "avg_cvr": 1.10, "avg_cpa": 40.91 }
+  },
+  "finance": {
+    "meta": { "avg_cpc": 3.77, "avg_ctr": 0.56, "avg_cvr": 9.09, "avg_cpa": 41.49 },
+    "google": { "avg_cpc": 3.44, "avg_ctr": 2.91, "avg_cvr": 5.10, "avg_cpa": 67.45 },
+    "tiktok": { "avg_cpc": 1.52, "avg_ctr": 0.88, "avg_cvr": 1.40, "avg_cpa": 108.57 },
+    "x": { "avg_cpc": 1.45, "avg_ctr": 0.60, "avg_cvr": 1.80, "avg_cpa": 80.56 },
+    "linkedin": { "avg_cpc": 5.58, "avg_ctr": 0.49, "avg_cvr": 3.10, "avg_cpa": 180.00 },
+    "snapchat": { "avg_cpc": 1.10, "avg_ctr": 0.75, "avg_cvr": 0.90, "avg_cpa": 122.22 }
+  },
+  "healthcare": {
+    "meta": { "avg_cpc": 1.32, "avg_ctr": 0.83, "avg_cvr": 11.00, "avg_cpa": 12.00 },
+    "google": { "avg_cpc": 2.62, "avg_ctr": 3.27, "avg_cvr": 3.36, "avg_cpa": 78.09 },
+    "tiktok": { "avg_cpc": 0.85, "avg_ctr": 1.10, "avg_cvr": 1.50, "avg_cpa": 56.67 },
+    "x": { "avg_cpc": 0.90, "avg_ctr": 0.72, "avg_cvr": 1.30, "avg_cpa": 69.23 },
+    "linkedin": { "avg_cpc": 4.20, "avg_ctr": 0.51, "avg_cvr": 2.80, "avg_cpa": 150.00 },
+    "snapchat": { "avg_cpc": 0.60, "avg_ctr": 0.90, "avg_cvr": 0.95, "avg_cpa": 63.16 }
+  },
+  "legal": {
+    "meta": { "avg_cpc": 1.32, "avg_ctr": 1.61, "avg_cvr": 5.60, "avg_cpa": 23.57 },
+    "google": { "avg_cpc": 6.75, "avg_ctr": 2.93, "avg_cvr": 6.98, "avg_cpa": 96.70 },
+    "tiktok": { "avg_cpc": 1.80, "avg_ctr": 0.70, "avg_cvr": 1.10, "avg_cpa": 163.64 },
+    "x": { "avg_cpc": 1.60, "avg_ctr": 0.55, "avg_cvr": 1.50, "avg_cpa": 106.67 },
+    "linkedin": { "avg_cpc": 5.80, "avg_ctr": 0.42, "avg_cvr": 2.50, "avg_cpa": 232.00 },
+    "snapchat": { "avg_cpc": 1.20, "avg_ctr": 0.65, "avg_cvr": 0.80, "avg_cpa": 150.00 }
+  },
+  "real-estate": {
+    "meta": { "avg_cpc": 1.81, "avg_ctr": 0.99, "avg_cvr": 10.68, "avg_cpa": 16.95 },
+    "google": { "avg_cpc": 2.37, "avg_ctr": 3.71, "avg_cvr": 2.47, "avg_cpa": 95.95 },
+    "tiktok": { "avg_cpc": 0.90, "avg_ctr": 1.20, "avg_cvr": 1.30, "avg_cpa": 69.23 },
+    "x": { "avg_cpc": 1.10, "avg_ctr": 0.68, "avg_cvr": 1.40, "avg_cpa": 78.57 },
+    "linkedin": { "avg_cpc": 4.50, "avg_ctr": 0.45, "avg_cvr": 2.20, "avg_cpa": 204.55 },
+    "snapchat": { "avg_cpc": 0.70, "avg_ctr": 0.88, "avg_cvr": 0.85, "avg_cpa": 82.35 }
+  },
+  "technology": {
+    "meta": { "avg_cpc": 1.27, "avg_ctr": 1.04, "avg_cvr": 2.31, "avg_cpa": 55.21 },
+    "google": { "avg_cpc": 3.80, "avg_ctr": 2.09, "avg_cvr": 2.92, "avg_cpa": 130.14 },
+    "tiktok": { "avg_cpc": 0.95, "avg_ctr": 1.30, "avg_cvr": 1.60, "avg_cpa": 59.38 },
+    "x": { "avg_cpc": 1.20, "avg_ctr": 0.78, "avg_cvr": 1.70, "avg_cpa": 70.59 },
+    "linkedin": { "avg_cpc": 5.26, "avg_ctr": 0.52, "avg_cvr": 3.20, "avg_cpa": 164.38 },
+    "snapchat": { "avg_cpc": 0.72, "avg_ctr": 0.95, "avg_cvr": 1.00, "avg_cpa": 72.00 }
+  },
+  "education": {
+    "meta": { "avg_cpc": 1.06, "avg_ctr": 0.73, "avg_cvr": 13.58, "avg_cpa": 7.85 },
+    "google": { "avg_cpc": 2.40, "avg_ctr": 3.78, "avg_cvr": 3.39, "avg_cpa": 70.80 },
+    "tiktok": { "avg_cpc": 0.55, "avg_ctr": 1.50, "avg_cvr": 2.00, "avg_cpa": 27.50 },
+    "x": { "avg_cpc": 0.70, "avg_ctr": 0.82, "avg_cvr": 1.60, "avg_cpa": 43.75 },
+    "linkedin": { "avg_cpc": 4.00, "avg_ctr": 0.48, "avg_cvr": 2.90, "avg_cpa": 137.93 },
+    "snapchat": { "avg_cpc": 0.40, "avg_ctr": 1.10, "avg_cvr": 1.20, "avg_cpa": 33.33 }
+  },
+  "automotive": {
+    "meta": { "avg_cpc": 2.24, "avg_ctr": 0.80, "avg_cvr": 5.11, "avg_cpa": 43.84 },
+    "google": { "avg_cpc": 2.46, "avg_ctr": 4.00, "avg_cvr": 6.03, "avg_cpa": 40.80 },
+    "tiktok": { "avg_cpc": 1.00, "avg_ctr": 1.35, "avg_cvr": 1.20, "avg_cpa": 83.33 },
+    "x": { "avg_cpc": 1.30, "avg_ctr": 0.70, "avg_cvr": 1.50, "avg_cpa": 86.67 },
+    "linkedin": { "avg_cpc": 4.80, "avg_ctr": 0.40, "avg_cvr": 2.00, "avg_cpa": 240.00 },
+    "snapchat": { "avg_cpc": 0.80, "avg_ctr": 1.00, "avg_cvr": 0.90, "avg_cpa": 88.89 }
+  },
+  "travel": {
+    "meta": { "avg_cpc": 0.63, "avg_ctr": 0.90, "avg_cvr": 2.82, "avg_cpa": 22.34 },
+    "google": { "avg_cpc": 1.53, "avg_ctr": 4.68, "avg_cvr": 3.55, "avg_cpa": 43.10 },
+    "tiktok": { "avg_cpc": 0.50, "avg_ctr": 1.60, "avg_cvr": 1.80, "avg_cpa": 27.78 },
+    "x": { "avg_cpc": 0.65, "avg_ctr": 0.85, "avg_cvr": 1.40, "avg_cpa": 46.43 },
+    "linkedin": { "avg_cpc": 3.50, "avg_ctr": 0.38, "avg_cvr": 1.80, "avg_cpa": 194.44 },
+    "snapchat": { "avg_cpc": 0.38, "avg_ctr": 1.15, "avg_cvr": 1.30, "avg_cpa": 29.23 }
+  },
+  "b2b": {
+    "meta": { "avg_cpc": 2.52, "avg_ctr": 0.78, "avg_cvr": 10.63, "avg_cpa": 23.77 },
+    "google": { "avg_cpc": 3.33, "avg_ctr": 2.41, "avg_cvr": 3.04, "avg_cpa": 109.54 },
+    "tiktok": { "avg_cpc": 1.40, "avg_ctr": 0.80, "avg_cvr": 1.00, "avg_cpa": 140.00 },
+    "x": { "avg_cpc": 1.50, "avg_ctr": 0.55, "avg_cvr": 1.20, "avg_cpa": 125.00 },
+    "linkedin": { "avg_cpc": 5.26, "avg_ctr": 0.54, "avg_cvr": 3.50, "avg_cpa": 150.29 },
+    "snapchat": { "avg_cpc": 1.00, "avg_ctr": 0.70, "avg_cvr": 0.70, "avg_cpa": 142.86 }
+  }
+}
