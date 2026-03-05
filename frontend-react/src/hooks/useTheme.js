@@ -1,7 +1,11 @@
 import { useState, useEffect } from 'react'
 
 export function useTheme() {
-  const [dark, setDark] = useState(() => localStorage.getItem('zg-theme') === 'dark')
+  const [dark, setDark] = useState(() => {
+    const stored = localStorage.getItem('polaris-theme')
+    if (stored) return stored === 'dark'
+    return window.matchMedia('(prefers-color-scheme: dark)').matches
+  })
 
   useEffect(() => {
     if (dark) {
@@ -9,7 +13,7 @@ export function useTheme() {
     } else {
       document.documentElement.classList.remove('dark')
     }
-    localStorage.setItem('zg-theme', dark ? 'dark' : 'light')
+    localStorage.setItem('polaris-theme', dark ? 'dark' : 'light')
   }, [dark])
 
   return [dark, () => setDark(d => !d)]
