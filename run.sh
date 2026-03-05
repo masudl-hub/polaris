@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # ==========================================
-# Zeitgeist Ads Pro — One-Command Startup
+# Polaris — One-Command Startup
 # ==========================================
 set -e
 
@@ -8,7 +8,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BACKEND_DIR="${SCRIPT_DIR}/backend"
 VENV_DIR="${BACKEND_DIR}/venv"
 
-echo "⚡ Zeitgeist Ads Pro — Startup"
+echo "⚡ Polaris — Startup"
 echo "========================================"
 
 # --- Step 1: Create virtual environment if needed ---
@@ -44,7 +44,7 @@ fi
 
 # --- Step 6: Launch server ---
 echo ""
-echo "🚀 Starting Zeitgeist Ads Pro server..."
+echo "🚀 Starting Polaris server..."
 echo "   Dashboard: http://localhost:8000"
 echo "   API Docs:  http://localhost:8000/docs"
 echo "   Health:    http://localhost:8000/health"

@@ -1,5 +1,5 @@
 """
-Zeitgeist Ads Pro — Multi-Modal Ad Resonance & Trend Predictor
+Polaris — Multi-Modal Ad Resonance & Trend Predictor
 Production-grade FastAPI backend with full DAG pipeline.
 """
 
@@ -59,7 +59,7 @@ async def lifespan(app: FastAPI):
     global nlp_model, sentiment_analyzer, word2vec_model, gemini_client, audience_scorer
 
     print("=" * 60)
-    print("🚀 Zeitgeist Ads Pro — Loading ML Models into memory...")
+    print("🚀 Polaris — Loading ML Models into memory...")
     print("=" * 60)
 
     # 1. spaCy NER
@@ -98,14 +98,14 @@ async def lifespan(app: FastAPI):
 
     yield  # App runs here
 
-    print("Shutting down Zeitgeist Ads Pro...")
+    print("Shutting down Polaris...")
 
 
 # ==========================================
 # APP INIT
 # ==========================================
 app = FastAPI(
-    title="Zeitgeist Ads Pro",
+    title="Polaris",
     description="Multi-Modal Ad Resonance & Trend Predictor",
     version="1.0.0",
     lifespan=lifespan,
@@ -142,7 +142,7 @@ async def serve_frontend():
     index_path = os.path.join(FRONTEND_DIR, "index.html")
     if os.path.exists(index_path):
         return FileResponse(index_path)
-    return {"message": "Zeitgeist Ads Pro API is running. Frontend not found."}
+    return {"message": "Polaris API is running. Frontend not found."}
 
 
 # ==========================================
@@ -591,7 +591,7 @@ async def run_landing_page_coherence(url: str, ad_entities: List[str], ad_sentim
 
     try:
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-            resp = await client.get(url, headers={"User-Agent": "ZeitgeistAds/1.0"})
+            resp = await client.get(url, headers={"User-Agent": "Polaris/1.0"})
             resp.raise_for_status()
 
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -660,7 +660,7 @@ async def run_reddit_sentiment(entities: List[str]) -> Optional[RedditSentiment]
             resp = await client.get(
                 "https://www.reddit.com/search.json",
                 params={"q": query, "sort": "relevance", "limit": 25, "t": "month"},
-                headers={"User-Agent": "ZeitgeistAds/1.0"},
+                headers={"User-Agent": "Polaris/1.0"},
             )
             resp.raise_for_status()
             data = resp.json()

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from 'react'
 
-const DB_NAME = 'zeitgeist_sessions'
+const DB_NAME = 'polaris_sessions'
 const DB_VERSION = 1
 const STORE_NAME = 'analyses'
 
