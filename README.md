@@ -1,168 +1,99 @@
-# ⚡ Zeitgeist Ads Pro
+# Polaris
 
-**Multi-Modal Ad Resonance & Trend Predictor**
+**Ad & Post Performance Analysis Platform**
 
-A production-grade ML pipeline that evaluates ad creatives (text, images, video) *before* deployment, predicting quality scores, effective CPC, and providing AI-generated strategic recommendations.
-
----
-
-## 🏗️ Architecture
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Ad Creative Input                         │
-│         (headline, body, hashtags, media file)               │
-└──────────────────────┬──────────────────────────────────────┘
-                       │
-          ┌────────────┼────────────┐
-          ▼            ▼            ▼
-   ┌─────────────┐ ┌────────────┐ ┌──────────────┐
-   │  Semantic    │ │  Visual    │ │  Forecasting │
-   │  Pipeline    │ │  Pipeline  │ │  Pipeline    │
-   │             │ │            │ │              │
-   │ • spaCy NER │ │ • OpenCV   │ │ • pytrends   │
-   │ • RoBERTa   │ │ • Efficient│ │ • 90-day     │
-   │ • GloVe W2V │ │   NetB0    │ │   momentum   │
-   └──────┬──────┘ └─────┬──────┘ └──────┬───────┘
-          │              │               │
-          └──────────────┼───────────────┘
-                         ▼
-              ┌─────────────────────┐
-              │  SEM Cost Engine    │
-              │                     │
-              │ QS = S×0.4 + T×0.4 │
-              │      + V×0.2       │
-              │                     │
-              │ eCPC = (Base×5)/QS  │
-              └──────────┬──────────┘
-                         ▼
-              ┌─────────────────────┐
-              │  LLM Synthesis      │
-              │  (Gemini 2.5 Pro)   │
-              │                     │
-              │  Narrates metrics   │
-              │  (no math/analysis) │
-              └──────────┬──────────┘
-                         ▼
-              ┌─────────────────────┐
-              │  Dashboard Output   │
-              │                     │
-              │ • Quality Score     │
-              │ • Effective CPC     │
-              │ • Daily Clicks      │
-              │ • Trend Momentum    │
-              │ • Visual Tags       │
-              │ • Executive Report  │
-              └─────────────────────┘
-```
+A full-stack ML pipeline that evaluates ad creatives and social posts before deployment — predicting quality scores, engagement metrics, effective CPC, and providing actionable recommendations.
 
 ---
 
-## 🚀 Quick Start
+## Quick Start
 
 ### Prerequisites
 - Python 3.10+
-- ~4GB disk space (for ML models on first run)
+- Node.js 18+
+- ~4GB disk space (ML models downloaded on first run)
 
-### 1. Clone & Navigate
+### 1. Backend
 ```bash
-cd /path/to/zeitgeist
+cd backend
+python3 -m venv venv && source venv/bin/activate
+pip install -r requirements.txt
+python -m spacy download en_core_web_sm
+cp .env.example .env  # Add your Gemini API key (optional)
+uvicorn main:app --host 0.0.0.0 --port 8000
 ```
 
-### 2. Set Up Environment
+### 2. Frontend
 ```bash
-cp backend/.env.example backend/.env
-# Edit backend/.env and add your Gemini API key (optional — app works without it)
+cd frontend-react
+npm install
+npm run dev  # Runs on port 5173, proxies /api to :8000
 ```
 
-### 3. Run
-```bash
-./run.sh
-```
-
-This will:
-- Create a Python virtual environment
-- Install all dependencies
-- Download spaCy and ML models (first run only)
-- Start the server at **http://localhost:8000**
-
-### 4. Open Dashboard
-Navigate to [http://localhost:8000](http://localhost:8000) in your browser.
+### 3. Open
+Navigate to [http://localhost:5173](http://localhost:5173)
 
 ---
 
-## 📁 Project Structure
+## What It Does
+
+### Ad Analysis (All Platforms)
+- **Semantic Pipeline**: spaCy NER, RoBERTa sentiment, GloVe Word2Vec hashtag expansion
+- **Visual Pipeline**: Gemini Vision for image/video analysis, OCR, platform fit scoring
+- **Trend Forecasting**: Google Trends 90-day momentum, top regions with interest values, related/rising queries
+- **SEM Simulation**: Quality score, effective CPC, daily click estimates
+- **Market Intelligence**: Industry benchmarks, landing page coherence, Reddit sentiment, competitor analysis
+- **Audience Alignment**: IAB Taxonomy + sentence-transformers cosine similarity scoring
+- **Creative Alignment**: Trend-to-copy gap analysis with suggested creative angles
+- **Executive Diagnostic**: Gemini-synthesized narrative (narrates metrics, does no math)
+
+### LinkedIn Post Prediction
+- **Content Quality Score** (0-100): 8 research-backed factors (post length, hook quality, readability, format, hashtags, CTA, sentiment, formatting)
+- **Engagement Prediction**: Impressions, reactions, comments, shares via HistGradientBoosting model trained on benchmark-grounded synthetic data
+- **Timing Heatmap**: 7x17 grid showing predicted engagement for every day/hour combination
+- **Actionable Suggestions**: Research-cited improvements with expected impact percentages
+
+---
+
+## Project Structure
 
 ```
-zeitgeist/
+polaris/
 ├── backend/
-│   ├── main.py              # FastAPI server + full ML pipeline
+│   ├── main.py              # FastAPI server + full ML pipeline (SSE streaming)
 │   ├── models.py            # Pydantic response schemas
+│   ├── linkedin_scorer.py   # LinkedIn post performance predictor
 │   ├── requirements.txt     # Python dependencies
-│   ├── .env.example         # Environment variable template
-│   └── .env                 # Your local env (gitignored)
-├── frontend/
-│   ├── index.html           # Dashboard UI
-│   ├── styles.css           # Dark theme styling
-│   └── app.js               # API integration + Chart.js
-├── run.sh                   # One-command startup script
-└── README.md                # This file
+│   └── .env.example         # Environment variable template
+├── frontend-react/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── Compose.jsx          # Bento-grid input form
+│   │   │   ├── Results.jsx          # Results dashboard router
+│   │   │   ├── results/             # Section components
+│   │   │   └── ui/                  # Shared UI components
+│   │   ├── hooks/                   # useAnalysis, useSessions, useTheme
+│   │   └── lib/                     # Motion variants, utilities
+│   └── index.html
+└── run.sh                   # One-command startup script
 ```
 
 ---
 
-## 🔌 API Reference
+## ML Models
 
-### `POST /api/v1/evaluate_ad`
-
-**Content-Type:** `multipart/form-data`
-
-| Field | Type | Required | Description |
-|-------|------|----------|-------------|
-| `headline` | string | ✅ | Ad headline text |
-| `body` | string | ✅ | Ad body copy |
-| `hashtags` | string | ✅ | Comma-separated hashtags |
-| `audience` | string | ✅ | Target audience description |
-| `geo` | string | ❌ | 2-letter geo code (default: US) |
-| `platform` | string | ❌ | Ad platform (default: Meta) |
-| `base_cpc` | float | ❌ | Industry base CPC in $ (default: 1.50) |
-| `budget` | float | ❌ | Daily budget in $ (default: 100.00) |
-| `media_file` | file | ✅ | Image (.jpg/.png) or video (.mp4/.mov) |
-
-**Response:** See `models.py` for full schema — includes quality score, eCPC, daily clicks, trend momentum, visual tags, clutter flags, and executive diagnostic.
-
-### `GET /health`
-Returns model loading status for all 5 components.
-
-### `GET /docs`
-Interactive Swagger UI (auto-generated by FastAPI).
+| Model | Purpose |
+|-------|---------|
+| spaCy en_core_web_sm | Named Entity Recognition |
+| cardiffnlp/twitter-roberta-base-sentiment | Sentiment scoring |
+| GloVe Twitter 50d | Hashtag expansion (cosine similarity) |
+| all-MiniLM-L6-v2 | Audience alignment (sentence embeddings) |
+| Gemini Vision | Image/video analysis, OCR, platform fit |
+| Gemini Flash | Executive diagnostic synthesis |
+| HistGradientBoosting | LinkedIn engagement prediction |
 
 ---
 
-## 🧠 ML Models Used
+## License
 
-| Model | Purpose | Source |
-|-------|---------|--------|
-| **spaCy en_core_web_sm** | Named Entity Recognition | spaCy |
-| **cardiffnlp/twitter-roberta-base-sentiment** | Sentiment/persuasion scoring | HuggingFace |
-| **GloVe Twitter 50d** | Hashtag expansion via cosine similarity | Gensim |
-| **EfficientNetB0** | Image/frame classification (ImageNet) | TensorFlow/Keras |
-| **Gemini 2.5 Pro** | Executive diagnostic synthesis | Google AI |
-
----
-
-## 🔑 Key Design Decisions
-
-1. **Deterministic before Generative** — The LLM only narrates pre-computed metrics. It performs no math, no trend analysis, no scoring. This eliminates hallucinated metrics.
-
-2. **Global Model Loading** — All models load into memory at startup via FastAPI's lifespan handler. No per-request loading overhead.
-
-3. **Visual Clutter Heuristic** — >6 unique objects detected across frames triggers a clutter flag. Based on advertising research showing focused creatives outperform busy ones.
-
-4. **SEM Auction Simulation** — Quality Score inversely affects CPC (like Google Ads). Higher quality = lower cost per click = more clicks per budget.
-
----
-
-## 📝 License
-
-Academic project — MIT License.
+MIT
