@@ -68,8 +68,8 @@ const Stat = ({ value, label, sub, delay = 0, Icon }) => (
   >
     {Icon && <Icon size={20} className="text-gray-600 mb-1" />}
     <span className="font-mono font-black text-[48px] leading-none text-[#f9d85a]">{value}</span>
-    <span className="text-sm font-semibold text-white">{label}</span>
-    {sub && <span className="text-[11px] text-gray-500 max-w-[180px] text-center leading-snug">{sub}</span>}
+    <span className="text-base font-semibold text-white">{label}</span>
+    {sub && <span className="text-xs text-gray-500 max-w-[200px] text-center leading-snug">{sub}</span>}
   </motion.div>
 )
 
@@ -109,10 +109,10 @@ const EvoRow = ({ label, before, after, delay = 0 }) => (
     transition={{ delay, duration: 0.4 }}
     className="flex items-center gap-4"
   >
-    <span className="w-[130px] shrink-0 text-xs font-semibold text-gray-500 text-right">{label}</span>
-    <span className="text-xs text-gray-600 flex-1 text-right">{before}</span>
-    <ArrowRight size={14} className="text-[#f9d85a] shrink-0" />
-    <span className="text-sm text-white flex-1">{after}</span>
+    <span className="w-[130px] shrink-0 text-sm font-semibold text-gray-500 text-right">{label}</span>
+    <span className="text-sm text-gray-600 flex-1 text-right">{before}</span>
+    <ArrowRight size={16} className="text-[#f9d85a] shrink-0" />
+    <span className="text-base text-white flex-1">{after}</span>
   </motion.div>
 )
 
@@ -127,12 +127,12 @@ function MockCompose() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3, duration: 0.6 }}
-      className="w-[320px] rounded-2xl bg-[#1a1a1c] ring-1 ring-white/[0.08] overflow-hidden"
+      className="w-[340px] rounded-2xl bg-[#1a1a1c] ring-1 ring-white/[0.08] overflow-hidden"
     >
       {/* Top bar */}
-      <div className="h-8 bg-[#111113] flex items-center px-3 gap-1.5 border-b border-white/[0.06]">
-        <div className="w-2.5 h-2.5 rounded-full bg-[#f9d85a]" />
-        <span className="text-[9px] font-mono text-gray-500 ml-1">POLARIS</span>
+      <div className="h-9 bg-[#111113] flex items-center px-3 gap-1.5 border-b border-white/[0.06]">
+        <div className="w-3 h-3 rounded-full bg-[#f9d85a]" />
+        <span className="text-[10px] font-mono text-gray-500 ml-1">POLARIS</span>
       </div>
       <div className="p-4 flex gap-3">
         {/* Upload zone */}
@@ -177,11 +177,11 @@ function MockAnalyze() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.5, duration: 0.6 }}
-      className="w-[320px] rounded-2xl bg-[#1a1a1c] ring-1 ring-white/[0.08] overflow-hidden"
+      className="w-[340px] rounded-2xl bg-[#1a1a1c] ring-1 ring-white/[0.08] overflow-hidden"
     >
-      <div className="h-8 bg-[#111113] flex items-center px-3 gap-1.5 border-b border-white/[0.06]">
-        <div className="w-2.5 h-2.5 rounded-full bg-[#f9d85a]" />
-        <span className="text-[9px] font-mono text-gray-500">ANALYZING</span>
+      <div className="h-9 bg-[#111113] flex items-center px-3 gap-1.5 border-b border-white/[0.06]">
+        <div className="w-3 h-3 rounded-full bg-[#f9d85a]" />
+        <span className="text-[10px] font-mono text-gray-500">ANALYZING</span>
       </div>
       <div className="p-4 flex flex-col items-center gap-3">
         {/* Step counter */}
@@ -227,11 +227,11 @@ function MockResults() {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.7, duration: 0.6 }}
-      className="w-[320px] rounded-2xl bg-[#1a1a1c] ring-1 ring-white/[0.08] overflow-hidden"
+      className="w-[340px] rounded-2xl bg-[#1a1a1c] ring-1 ring-white/[0.08] overflow-hidden"
     >
-      <div className="h-8 bg-[#111113] flex items-center px-3 gap-1.5 border-b border-white/[0.06]">
-        <div className="w-2.5 h-2.5 rounded-full bg-[#f9d85a]" />
-        <span className="text-[9px] font-mono text-gray-500">RESULTS</span>
+      <div className="h-9 bg-[#111113] flex items-center px-3 gap-1.5 border-b border-white/[0.06]">
+        <div className="w-3 h-3 rounded-full bg-[#f9d85a]" />
+        <span className="text-[10px] font-mono text-gray-500">RESULTS</span>
       </div>
       <div className="p-3 flex flex-col gap-2">
         {/* KPI row */}
@@ -261,15 +261,16 @@ function MockResults() {
         {/* Trend mini chart */}
         <div className="rounded-xl bg-white/[0.03] p-2.5">
           <span className="text-[7px] text-gray-600 uppercase block mb-1">90-Day Trend</span>
-          <svg viewBox="0 0 200 40" className="w-full h-8">
+          <svg viewBox="0 0 200 50" className="w-full h-10" preserveAspectRatio="none">
             <defs>
               <linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
                 <stop offset="0%" stopColor="#f9d85a" stopOpacity="0.3" />
                 <stop offset="100%" stopColor="#f9d85a" stopOpacity="0" />
               </linearGradient>
             </defs>
-            <path d="M0,30 Q20,28 40,25 T80,20 T120,22 T160,12 T200,8" fill="none" stroke="#f9d85a" strokeWidth="1.5" />
-            <path d="M0,30 Q20,28 40,25 T80,20 T120,22 T160,12 T200,8 V40 H0 Z" fill="url(#tg)" />
+            {[15, 30].map(y => <line key={y} x1="0" y1={y} x2="200" y2={y} stroke="rgba(255,255,255,0.03)" />)}
+            <path d="M0,40 C20,38 40,32 60,28 S100,22 120,25 S160,14 180,10 L200,8" fill="none" stroke="#f9d85a" strokeWidth="2" />
+            <path d="M0,40 C20,38 40,32 60,28 S100,22 120,25 S160,14 180,10 L200,8 V50 H0 Z" fill="url(#tg)" />
           </svg>
         </div>
         {/* Entities */}
@@ -296,7 +297,7 @@ const PipeNode = ({ Icon, label, color = '#f9d85a', delay = 0 }) => (
     <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `${color}12`, border: `1.5px solid ${color}25` }}>
       <Icon size={18} style={{ color }} />
     </div>
-    <span className="text-[9px] text-gray-500 text-center w-16 leading-tight">{label}</span>
+    <span className="text-[10px] text-gray-500 text-center w-16 leading-tight">{label}</span>
   </motion.div>
 )
 
@@ -344,46 +345,57 @@ function QSFormula() {
 /*  SSE STREAMING VISUALIZATION                                        */
 /* ═══════════════════════════════════════════════════════════════════ */
 function SSEStream() {
-  const events = ['text_data', 'vision_data', 'trend_data', 'sem_metrics', 'audience_data', 'diagnostic']
+  const events = [
+    { name: 'text_data', label: 'NER + Sentiment' },
+    { name: 'vision_data', label: 'Image Analysis' },
+    { name: 'trend_data', label: 'Google Trends' },
+    { name: 'sem_metrics', label: 'CPC + Auction' },
+    { name: 'audience_data', label: 'IAB Matching' },
+    { name: 'diagnostic', label: 'AI Summary' },
+  ]
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ delay: 0.8 }}
-      className="flex items-center gap-2"
+      className="flex items-center gap-3 px-5 py-3 rounded-2xl bg-white/[0.02] ring-1 ring-white/[0.06]"
     >
-      <div className="flex flex-col items-center gap-0.5">
-        <Layers size={16} className="text-gray-500" />
-        <span className="text-[8px] text-gray-600">Backend</span>
+      <div className="flex flex-col items-center gap-1">
+        <Layers size={18} className="text-gray-400" />
+        <span className="text-[10px] text-gray-500 font-medium">Server</span>
       </div>
-      <div className="relative w-32 h-6 overflow-hidden">
+      <div className="relative w-24 h-8 overflow-hidden mx-1">
         <div className="absolute inset-y-0 left-0 right-0 flex items-center">
           <div className="w-full h-px bg-white/10" />
         </div>
+        <span className="absolute top-0 left-1/2 -translate-x-1/2 text-[8px] font-mono text-[#f9d85a]/50">SSE</span>
         {events.map((_, i) => (
           <motion.div
             key={i}
-            className="absolute top-1/2 -mt-1 w-2 h-2 rounded-full bg-[#f9d85a]"
+            className="absolute top-1/2 -mt-0.5 w-2 h-2 rounded-full bg-[#f9d85a]"
             style={{ boxShadow: '0 0 6px #f9d85a60' }}
             initial={{ left: '-5%', opacity: 0 }}
             animate={{ left: '105%', opacity: [0, 1, 1, 0] }}
-            transition={{ duration: 1.5, delay: i * 0.4, repeat: Infinity, ease: 'linear', repeatDelay: events.length * 0.4 - 1.5 }}
+            transition={{ duration: 1.2, delay: i * 0.35, repeat: Infinity, ease: 'linear', repeatDelay: events.length * 0.35 - 1.2 }}
           />
         ))}
       </div>
-      <div className="flex flex-col items-center gap-0.5">
-        <Monitor size={16} className="text-gray-500" />
-        <span className="text-[8px] text-gray-600">Frontend</span>
+      <div className="flex flex-col items-center gap-1">
+        <Monitor size={18} className="text-gray-400" />
+        <span className="text-[10px] text-gray-500 font-medium">Client</span>
       </div>
-      <div className="flex flex-col gap-0.5 ml-2">
+      <div className="flex flex-col gap-0.5 ml-3 border-l border-white/[0.06] pl-3">
         {events.map((e, i) => (
-          <motion.span
-            key={e}
+          <motion.div
+            key={e.name}
             initial={{ opacity: 0, x: -8 }}
             animate={{ opacity: 1, x: 0 }}
-            transition={{ delay: 1 + i * 0.12 }}
-            className="text-[7px] font-mono text-gray-600"
-          >{e}</motion.span>
+            transition={{ delay: 1 + i * 0.1 }}
+            className="flex items-center gap-2"
+          >
+            <span className="text-[9px] font-mono text-[#f9d85a]/60 w-20">{e.name}</span>
+            <span className="text-[9px] text-gray-500">{e.label}</span>
+          </motion.div>
         ))}
       </div>
     </motion.div>
@@ -475,15 +487,15 @@ function S2() {
         Advertisers waste budget because they <G>can&rsquo;t evaluate creative</G> before deploying
       </motion.h1>
       <div className="flex gap-20 items-end">
-        <Stat value="$740B" label="Global ad spend" sub="Digital advertising market, 2025" delay={0.2} Icon={DollarSign} />
-        <Stat value="~26%" label="Wasted" sub="On underperforming creative (Juniper Research)" delay={0.4} Icon={AlertTriangle} />
-        <Stat value="$0" label="Pre-flight evaluation" sub="No tools exist to score creative before launch" delay={0.6} Icon={ShieldCheck} />
+        <Stat value="$740B" label="Global ad spend" sub="Digital advertising, 2025" delay={0.2} Icon={DollarSign} />
+        <Stat value="~26%" label="Wasted on poor creative" delay={0.4} Icon={AlertTriangle} />
+        <Stat value="0" label="Pre-flight tools" sub="No way to score before launch" delay={0.6} Icon={ShieldCheck} />
       </div>
       <div className="flex gap-5 mt-2">
         {[
-          { Icon: Target, title: 'No pre-testing', desc: 'Ads go live without quality scores or sentiment checks' },
-          { Icon: Globe, title: 'Platform blind spots', desc: 'Same creative reused across TikTok, LinkedIn, Meta' },
-          { Icon: DollarSign, title: 'Post-hoc only', desc: 'Platforms tell you what failed after budget is gone' },
+          { Icon: Target, title: 'No pre-testing', desc: 'Ads go live unscored' },
+          { Icon: Globe, title: 'Platform blind spots', desc: 'Same creative across all platforms' },
+          { Icon: DollarSign, title: 'Post-hoc only', desc: 'You learn what failed after spend' },
         ].map((item, i) => (
           <GlowCard key={item.title} delay={0.6 + i * 0.1} className="flex-1 max-w-[260px]">
             <div className="flex gap-3 items-start">
@@ -491,8 +503,8 @@ function S2() {
                 <item.Icon size={16} className="text-gray-400" />
               </div>
               <div>
-                <span className="text-sm font-semibold text-white block">{item.title}</span>
-                <span className="text-xs text-gray-400">{item.desc}</span>
+                <span className="text-base font-semibold text-white block">{item.title}</span>
+                <span className="text-sm text-gray-400">{item.desc}</span>
               </div>
             </div>
           </GlowCard>
@@ -505,25 +517,31 @@ function S2() {
 /* 3 ── Personas ─────────────────────────────────────────────────── */
 function S3() {
   const personas = [
-    { Icon: Briefcase, role: 'SMB Marketer', pain: '$500/day budget, one shot to get creative right. Can\'t afford A/B testing at scale.', need: 'Score creative before publishing' },
-    { Icon: BarChart3, role: 'Media Buyer', pain: 'Manages 20+ accounts across platforms. Needs fast quality checks to justify spend.', need: 'Compare creative options instantly' },
-    { Icon: MessageSquare, role: 'Social Manager', pain: 'Posts 3-5x/week on LinkedIn. Wants to know optimal timing and hook quality.', need: 'Predict engagement before posting' },
+    { Icon: Briefcase, role: 'SMB Marketer', stat: '$500', statLabel: '/day budget', pain: 'One shot to get creative right', need: 'Score before publishing' },
+    { Icon: BarChart3, role: 'Media Buyer', stat: '20+', statLabel: 'accounts', pain: 'Needs fast quality checks at scale', need: 'Compare options instantly' },
+    { Icon: MessageSquare, role: 'Social Manager', stat: '3-5x', statLabel: '/week posts', pain: 'Wants optimal timing and hooks', need: 'Predict before posting' },
   ]
   return (
     <div className="flex flex-col items-center justify-center h-full gap-10 px-16">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[32px] leading-tight font-semibold text-white text-center max-w-[750px]">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[36px] leading-tight font-semibold text-white text-center max-w-[800px]">
         Three roles need a <G>pre-flight check</G> for every campaign
       </motion.h1>
       <div className="flex gap-6">
         {personas.map((p, i) => (
-          <GlowCard key={p.role} delay={0.2 + i * 0.15} className="w-[280px] flex flex-col gap-4">
-            <div className="w-10 h-10 rounded-xl bg-white/[0.06] flex items-center justify-center">
-              <p.Icon size={20} className="text-gray-300" />
+          <GlowCard key={p.role} delay={0.2 + i * 0.15} className="w-[300px] flex flex-col gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-xl bg-white/[0.06] flex items-center justify-center">
+                <p.Icon size={22} className="text-gray-300" />
+              </div>
+              <span className="text-xl font-bold text-white">{p.role}</span>
             </div>
-            <span className="text-lg font-bold text-white">{p.role}</span>
-            <span className="text-sm text-gray-400 leading-relaxed flex-1">{p.pain}</span>
+            <div className="flex items-baseline gap-1.5">
+              <span className="font-mono font-black text-[36px] leading-none text-[#f9d85a]">{p.stat}</span>
+              <span className="text-sm text-gray-500">{p.statLabel}</span>
+            </div>
+            <span className="text-sm text-gray-400">{p.pain}</span>
             <div className="pt-3 border-t border-white/[0.06]">
-              <span className="text-xs font-semibold text-[#f9d85a]">{p.need}</span>
+              <span className="text-sm font-semibold text-[#f9d85a]">{p.need}</span>
             </div>
           </GlowCard>
         ))}
@@ -536,7 +554,7 @@ function S3() {
 function S4() {
   return (
     <div className="flex flex-col items-center justify-center h-full gap-8 px-12">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[30px] leading-tight font-semibold text-white text-center max-w-[800px]">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[34px] leading-tight font-semibold text-white text-center max-w-[800px]">
         Polaris evaluates ads across <G>6 platforms</G> using <G>7 ML models</G> before a dollar is spent
       </motion.h1>
 
@@ -544,7 +562,7 @@ function S4() {
       <div className="flex items-start gap-4">
         <div className="flex flex-col items-center gap-2">
           <MockCompose />
-          <span className="text-xs text-gray-500 font-medium">1. Compose</span>
+          <span className="text-sm text-gray-500 font-medium">1. Compose</span>
         </div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }} className="flex items-center h-[200px]">
@@ -553,7 +571,7 @@ function S4() {
 
         <div className="flex flex-col items-center gap-2">
           <MockAnalyze />
-          <span className="text-xs text-gray-500 font-medium">2. Analyze</span>
+          <span className="text-sm text-gray-500 font-medium">2. Analyze</span>
         </div>
 
         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.8 }} className="flex items-center h-[200px]">
@@ -562,15 +580,15 @@ function S4() {
 
         <div className="flex flex-col items-center gap-2">
           <MockResults />
-          <span className="text-xs text-gray-500 font-medium">3. Results</span>
+          <span className="text-sm text-gray-500 font-medium">3. Results</span>
         </div>
       </div>
 
       {/* Platform row */}
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 1 }} className="flex gap-4 items-center">
         {Object.keys(PLAT_SVG).map((p, i) => (
-          <motion.div key={p} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 + i * 0.06 }} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/[0.04] ring-1 ring-white/[0.06] text-gray-400 text-xs">
-            <PIcon name={p} size={12} />
+          <motion.div key={p} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 1.1 + i * 0.06 }} className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/[0.04] ring-1 ring-white/[0.06] text-gray-400 text-sm">
+            <PIcon name={p} size={14} />
             {p}
           </motion.div>
         ))}
@@ -584,7 +602,7 @@ function S5() {
   const c1 = '#f9d85a', c2 = '#a78bfa', c3 = '#34d399'
   return (
     <div className="flex flex-col items-center justify-center h-full gap-5 px-12">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[28px] leading-tight font-semibold text-white text-center max-w-[800px]">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[32px] leading-tight font-semibold text-white text-center max-w-[800px]">
         A deterministic pipeline <G>streams results</G> through 13 steps in ~30 seconds
       </motion.h1>
 
@@ -661,78 +679,237 @@ function S5() {
 
 /* 6 ── ML Models + QS Formula ───────────────────────────────────── */
 function S6() {
-  const models = [
-    { name: 'spaCy', Icon: Search, task: 'Entity extraction (ORG, PRODUCT, GPE)' },
-    { name: 'RoBERTa', Icon: Brain, task: 'Sentiment scoring (pos / neu / neg)' },
-    { name: 'GloVe 50d', Icon: Link2, task: 'Hashtag expansion via cosine similarity' },
-    { name: 'Gemini Vision', Icon: Eye, task: 'Image/video analysis, 30+ prompts' },
-    { name: 'MiniLM-L6', Icon: Users, task: 'Audience alignment embeddings' },
-    { name: 'HistGBR', Icon: BarChart3, task: 'LinkedIn engagement prediction' },
-    { name: 'Gemini Flash', Icon: Sparkles, task: 'Executive diagnostic (narration only)' },
+  const groups = [
+    { label: 'NLP', color: '#f9d85a', models: [
+      { name: 'spaCy', Icon: Search, task: 'Entity extraction' },
+      { name: 'RoBERTa', Icon: Brain, task: 'Sentiment scoring' },
+      { name: 'GloVe 50d', Icon: Link2, task: 'Hashtag expansion' },
+    ]},
+    { label: 'VISION', color: '#a78bfa', models: [
+      { name: 'Gemini Vision', Icon: Eye, task: 'Image analysis' },
+    ]},
+    { label: 'INTELLIGENCE', color: '#34d399', models: [
+      { name: 'MiniLM-L6', Icon: Users, task: 'Audience matching' },
+      { name: 'HistGBR', Icon: BarChart3, task: 'Engagement prediction' },
+    ]},
+    { label: 'SYNTHESIS', color: '#f97316', models: [
+      { name: 'Gemini Flash', Icon: Sparkles, task: 'Diagnostic prose' },
+    ]},
   ]
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-7 px-16">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[28px] leading-tight font-semibold text-white text-center max-w-[700px]">
-        Each step uses <G>purpose-built ML</G> &mdash; no black boxes
+    <div className="flex flex-col items-center justify-center h-full gap-8 px-16">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[32px] leading-tight font-semibold text-white text-center max-w-[800px]">
+        <G>7 purpose-built models</G> &mdash; no black boxes
       </motion.h1>
 
-      <div className="grid grid-cols-7 gap-3 w-full max-w-[900px]">
-        {models.map((m, i) => (
-          <motion.div key={m.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.07 }}
-            className="flex flex-col items-center gap-3 p-4 rounded-2xl bg-white/[0.03] ring-1 ring-white/[0.06] hover:ring-[#f9d85a]/25 transition-all">
-            <div className="w-10 h-10 rounded-xl bg-[#f9d85a]/10 flex items-center justify-center">
-              <m.Icon size={20} className="text-[#f9d85a]" />
-            </div>
-            <span className="font-mono text-[11px] font-bold text-[#f9d85a]">{m.name}</span>
-            <span className="text-[10px] text-gray-400 text-center leading-snug">{m.task}</span>
+      <div className="flex gap-5 w-full max-w-[960px]">
+        {groups.map((g, gi) => (
+          <motion.div key={g.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + gi * 0.1 }}
+            className="flex-1 rounded-2xl p-4 ring-1 flex flex-col gap-3"
+            style={{ background: `${g.color}06`, borderColor: `${g.color}18` }}>
+            <span className="text-[10px] font-mono font-bold tracking-[0.2em] text-center" style={{ color: g.color }}>{g.label}</span>
+            {g.models.map(m => (
+              <div key={m.name} className="flex flex-col items-center gap-2 p-3 rounded-xl bg-white/[0.03]">
+                <div className="w-11 h-11 rounded-xl flex items-center justify-center" style={{ background: `${g.color}12` }}>
+                  <m.Icon size={22} style={{ color: g.color }} />
+                </div>
+                <span className="font-mono text-[13px] font-bold" style={{ color: g.color }}>{m.name}</span>
+                <span className="text-[11px] text-gray-400 text-center">{m.task}</span>
+              </div>
+            ))}
           </motion.div>
         ))}
       </div>
 
       {/* QS Formula visualization */}
       <QSFormula />
-
-      <GlowCard gold delay={0.9} className="max-w-[550px] text-center">
-        <div className="flex items-center justify-center gap-2 mb-1">
-          <ShieldCheck size={14} className="text-[#f9d85a]" />
-          <span className="text-sm text-white font-semibold">Deterministic before Generative</span>
-        </div>
-        <span className="text-xs text-gray-400">Every number is computed by traditional ML. The LLM only writes prose.</span>
-      </GlowCard>
     </div>
   )
 }
 
 /* 7 ── Data Sources ─────────────────────────────────────────────── */
 function S7() {
+  /* Mini data preview components */
+  const MiniTrendChart = () => (
+    <div className="flex flex-col gap-1 mt-2 flex-1">
+      <svg viewBox="0 0 180 70" className="w-full flex-1" preserveAspectRatio="none">
+        <defs><linearGradient id="mtg" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#34d399" stopOpacity="0.3" /><stop offset="100%" stopColor="#34d399" stopOpacity="0" /></linearGradient></defs>
+        {/* Grid lines */}
+        {[18, 36, 54].map(y => <line key={y} x1="0" y1={y} x2="180" y2={y} stroke="rgba(255,255,255,0.04)" />)}
+        <path d="M0,55 Q10,52 25,48 T50,40 T75,35 T100,30 T125,22 T150,15 T180,10" fill="none" stroke="#34d399" strokeWidth="2" />
+        <path d="M0,55 Q10,52 25,48 T50,40 T75,35 T100,30 T125,22 T150,15 T180,10 V70 H0 Z" fill="url(#mtg)" />
+        {/* Data points */}
+        {[[0,55],[50,40],[100,30],[150,15],[180,10]].map(([x,y],i) => (
+          <circle key={i} cx={x} cy={y} r="2.5" fill="#34d399" />
+        ))}
+      </svg>
+      <div className="flex justify-between text-[8px] text-gray-600 px-1">
+        <span>90 days ago</span><span>60d</span><span>30d</span><span>Today</span>
+      </div>
+    </div>
+  )
+  const MiniTaxonomy = () => (
+    <div className="flex flex-col gap-1.5 mt-2 flex-1">
+      <div className="text-[8px] text-gray-600 mb-0.5">Hierarchical category matching</div>
+      {[
+        { w: '100%', l: 'IAB Tier 1', count: '29 categories', opacity: 0.5 },
+        { w: '85%', l: 'Technology & Computing', count: '→ 12 subcats', opacity: 0.4 },
+        { w: '65%', l: 'Consumer Electronics', count: '→ 8 subcats', opacity: 0.35 },
+        { w: '45%', l: 'Smartphones', count: '→ leaf node', opacity: 0.25 },
+      ].map((r, i) => (
+        <motion.div key={r.l} className="flex items-center gap-2" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.08 }}>
+          <div className="h-2.5 rounded-full" style={{ width: r.w, background: `rgba(249,216,90,${r.opacity})` }} />
+          <span className="text-[8px] text-gray-500 whitespace-nowrap shrink-0">{r.l}</span>
+          <span className="text-[7px] text-gray-600 whitespace-nowrap">{r.count}</span>
+        </motion.div>
+      ))}
+      <div className="flex gap-1 mt-1">
+        {['Automotive', 'Health', 'Finance', 'Travel', 'Food'].map(t => (
+          <span key={t} className="text-[7px] px-1.5 py-0.5 rounded bg-[#f9d85a]/[0.08] text-[#f9d85a]/60">{t}</span>
+        ))}
+      </div>
+    </div>
+  )
+  const MiniSentimentBars = () => (
+    <div className="flex flex-col gap-1.5 mt-2 flex-1">
+      <div className="text-[8px] text-gray-600">Live subreddit sentiment on brand/product</div>
+      {[
+        { sub: 'r/marketing', score: 0.72, posts: '2.4k', sentiment: 'Positive' },
+        { sub: 'r/advertising', score: 0.58, posts: '890', sentiment: 'Mixed' },
+        { sub: 'r/socialmedia', score: 0.81, posts: '1.1k', sentiment: 'Positive' },
+      ].map((r, i) => (
+        <motion.div key={r.sub} className="flex items-center gap-2" initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.08 }}>
+          <span className="text-[8px] text-[#f97316]/80 font-mono w-20 shrink-0">{r.sub}</span>
+          <div className="flex-1 h-3 bg-white/[0.04] rounded-full overflow-hidden">
+            <motion.div className="h-full rounded-full" style={{ background: r.score > 0.7 ? '#22c55e40' : '#f59e0b40', width: `${r.score * 100}%` }}
+              initial={{ width: 0 }} animate={{ width: `${r.score * 100}%` }} transition={{ delay: 0.5 + i * 0.1, duration: 0.5 }} />
+          </div>
+          <span className="text-[7px] text-gray-600 w-6">{r.posts}</span>
+          <span className="text-[7px] font-medium w-12" style={{ color: r.score > 0.7 ? '#22c55e' : '#f59e0b' }}>{r.sentiment}</span>
+        </motion.div>
+      ))}
+      <div className="flex gap-1 items-end h-6 mt-1">
+        {[0.3, 0.5, 0.7, 0.4, 0.8, 0.6, 0.9, 0.5, 0.7, 0.8].map((h, i) => (
+          <motion.div key={i} className="flex-1 rounded-sm" style={{ height: `${h * 100}%`, background: h > 0.6 ? '#f9731630' : '#f9731615' }}
+            initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ delay: 0.6 + i * 0.03 }} />
+        ))}
+      </div>
+    </div>
+  )
+  const MiniAdGrid = () => (
+    <div className="flex flex-col gap-1.5 mt-2 flex-1">
+      <div className="text-[8px] text-gray-600">Competitor creative intelligence</div>
+      {[
+        { brand: 'Competitor A', ads: 142, spend: '$45K/mo', format: 'Video' },
+        { brand: 'Competitor B', ads: 89, spend: '$28K/mo', format: 'Carousel' },
+        { brand: 'Competitor C', ads: 56, spend: '$12K/mo', format: 'Image' },
+      ].map((r, i) => (
+        <motion.div key={r.brand} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-[#60a5fa]/[0.06]"
+          initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.08 }}>
+          <div className="w-5 h-5 rounded bg-[#60a5fa]/20 flex items-center justify-center">
+            <Eye size={8} className="text-[#60a5fa]" />
+          </div>
+          <span className="text-[8px] font-medium text-white/70 flex-1">{r.brand}</span>
+          <span className="text-[7px] font-mono text-[#60a5fa]/70">{r.ads} ads</span>
+          <span className="text-[7px] font-mono text-gray-600">{r.spend}</span>
+        </motion.div>
+      ))}
+      <div className="grid grid-cols-6 gap-0.5 mt-1">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <motion.div key={i} className="aspect-[4/5] rounded-sm bg-[#60a5fa]/15 flex items-center justify-center"
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 + i * 0.04 }}>
+            <ImagePlus size={6} className="text-[#60a5fa]/30" />
+          </motion.div>
+        ))}
+      </div>
+    </div>
+  )
+  const MiniBenchBars = () => {
+    const metrics = ['CPC', 'CTR', 'CVR', 'CPM', 'CPA']
+    const platforms = ['Meta', 'Google', 'TikTok', 'LinkedIn', 'X', 'Snap']
+    const data = [
+      [0.6, 0.8, 0.4, 0.9, 0.5, 0.3],
+      [0.7, 0.5, 0.8, 0.4, 0.6, 0.7],
+      [0.3, 0.6, 0.5, 0.7, 0.3, 0.4],
+      [0.5, 0.7, 0.6, 0.8, 0.4, 0.5],
+      [0.4, 0.9, 0.3, 0.6, 0.5, 0.3],
+    ]
+    return (
+      <div className="flex flex-col gap-1 mt-2 flex-1">
+        <div className="flex gap-0.5">
+          <div className="w-7" />
+          {platforms.map(p => <span key={p} className="flex-1 text-[7px] text-gray-600 text-center">{p}</span>)}
+        </div>
+        {metrics.map((m, mi) => (
+          <div key={m} className="flex gap-0.5 items-center">
+            <span className="text-[8px] text-gray-500 w-7 text-right pr-1 shrink-0">{m}</span>
+            {data[mi].map((v, pi) => (
+              <motion.div key={pi} className="flex-1 h-4 rounded-sm" style={{ background: `rgba(167,139,250,${v * 0.6})` }}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 + mi * 0.05 + pi * 0.03 }} />
+            ))}
+          </div>
+        ))}
+        <div className="flex items-center gap-2 mt-1">
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-2 rounded-sm bg-[#a78bfa]/15" />
+            <span className="text-[7px] text-gray-600">Low</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <div className="w-3 h-2 rounded-sm bg-[#a78bfa]/60" />
+            <span className="text-[7px] text-gray-600">High</span>
+          </div>
+        </div>
+      </div>
+    )
+  }
+  const MiniStudies = () => (
+    <div className="flex flex-col gap-1.5 mt-2 flex-1">
+      {[
+        { src: 'Social Insider', finding: 'Carousel posts drive 1.4x engagement' },
+        { src: 'Hootsuite', finding: 'Best posting: Tue–Thu 9–11 AM' },
+        { src: 'Buffer', finding: 'Video posts get 5x reach vs text' },
+        { src: 'Sprout Social', finding: 'Optimal hashtags: 3–5 per post' },
+        { src: 'WordStream', finding: 'Avg CPC benchmarks across industries' },
+      ].map((s, i) => (
+        <motion.div key={s.src} className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-[#f472b6]/[0.06]"
+          initial={{ opacity: 0, x: -8 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.5 + i * 0.06 }}>
+          <BookOpen size={10} className="text-[#f472b6]/60 shrink-0" />
+          <span className="text-[8px] font-bold text-[#f472b6]/80 shrink-0 w-16">{s.src}</span>
+          <span className="text-[8px] text-gray-500 flex-1">{s.finding}</span>
+        </motion.div>
+      ))}
+    </div>
+  )
+
   const sources = [
-    { name: 'Google Trends', stat: '90-day series', desc: 'Trailing search volume, regional interest, related & rising queries', Icon: TrendingUp, color: '#34d399' },
-    { name: 'IAB Taxonomy', stat: '1,558 segments', desc: 'Industry-standard audience classification used by DSPs/SSPs worldwide', Icon: Users, color: '#f9d85a' },
-    { name: 'Reddit API', stat: 'Live sentiment', desc: 'Community sentiment from relevant subreddits with theme extraction', Icon: MessageSquare, color: '#f97316' },
-    { name: 'Meta Ad Library', stat: 'Competitor intel', desc: 'Active ad count, longevity, format breakdown for any brand', Icon: Briefcase, color: '#60a5fa' },
-    { name: 'Benchmarks DB', stat: '10 x 6 matrix', desc: 'CPC, CTR, CVR, CPA across 10 industries and 6 platforms', Icon: Database, color: '#a78bfa' },
-    { name: 'Published Research', stat: '10 studies', desc: 'Social Insider, Hootsuite, Buffer, Sprout Social, ConnectSafely 2026', Icon: BookOpen, color: '#f472b6' },
+    { name: 'Google Trends', stat: '90-day series', Icon: TrendingUp, color: '#34d399', Preview: MiniTrendChart },
+    { name: 'IAB Taxonomy', stat: '1,558 segments', Icon: Users, color: '#f9d85a', Preview: MiniTaxonomy },
+    { name: 'Reddit API', stat: 'Live sentiment', Icon: MessageSquare, color: '#f97316', Preview: MiniSentimentBars },
+    { name: 'Meta Ad Library', stat: 'Competitor intel', Icon: Briefcase, color: '#60a5fa', Preview: MiniAdGrid },
+    { name: 'Benchmarks DB', stat: '10 x 6 matrix', Icon: Database, color: '#a78bfa', Preview: MiniBenchBars },
+    { name: 'Published Research', stat: '10 studies', Icon: BookOpen, color: '#f472b6', Preview: MiniStudies },
   ]
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-8 px-16">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[28px] leading-tight font-semibold text-white text-center max-w-[750px]">
+    <div className="flex flex-col items-center justify-center h-full gap-8 px-12">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[34px] leading-tight font-semibold text-white text-center max-w-[800px]">
         Grounded in <G>6 live data sources</G> and <G>1,558 IAB taxonomy</G> segments
       </motion.h1>
-      <div className="grid grid-cols-3 gap-4 w-full max-w-[860px]">
+
+      {/* Source cards — 2 rows of 3, expanded */}
+      <div className="grid grid-cols-3 gap-5 w-full max-w-[1060px]">
         {sources.map((s, i) => (
-          <motion.div key={s.name} initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.15 + i * 0.08 }}
-            className="rounded-2xl p-5 bg-white/[0.03] ring-1 ring-white/[0.06] flex flex-col gap-3">
+          <motion.div key={s.name} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }}
+            className="rounded-2xl p-5 bg-white/[0.04] ring-1 ring-white/[0.07] flex flex-col gap-2">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: `${s.color}12` }}>
-                  <s.Icon size={14} style={{ color: s.color }} />
+              <div className="flex items-center gap-2.5">
+                <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: `${s.color}15` }}>
+                  <s.Icon size={20} style={{ color: s.color }} />
                 </div>
-                <span className="text-sm font-bold text-white">{s.name}</span>
+                <span className="text-base font-bold text-white">{s.name}</span>
               </div>
-              <span className="font-mono text-[10px] font-bold px-2 py-0.5 rounded-full" style={{ background: `${s.color}15`, color: s.color }}>{s.stat}</span>
+              <span className="font-mono text-[11px] font-bold px-2.5 py-1 rounded-full" style={{ background: `${s.color}15`, color: s.color }}>{s.stat}</span>
             </div>
-            <span className="text-xs text-gray-400 leading-relaxed">{s.desc}</span>
-            <div className="h-1 rounded-full mt-auto" style={{ background: `linear-gradient(to right, ${s.color}40, ${s.color}00)` }} />
+            <s.Preview />
           </motion.div>
         ))}
       </div>
@@ -740,45 +917,145 @@ function S7() {
   )
 }
 
-/* 8 ── Validation ───────────────────────────────────────────────── */
+/* 8 ── Validation — visual comparisons ─────────────────────────── */
+/* Mini bar comparison */
+const CompBar = ({ label, ours, benchmark, oursLabel, benchLabel, color, delay = 0 }) => (
+  <motion.div initial={{ opacity: 0, x: -16 }} animate={{ opacity: 1, x: 0 }} transition={{ delay }} className="flex flex-col gap-1.5">
+    <span className="text-sm text-white font-medium">{label}</span>
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-500 w-16 text-right">{oursLabel}</span>
+        <div className="flex-1 h-3 bg-white/[0.04] rounded-full overflow-hidden">
+          <motion.div className="h-full rounded-full" style={{ background: color }} initial={{ width: 0 }} animate={{ width: `${ours}%` }} transition={{ delay: delay + 0.2, duration: 0.6, ease: 'easeOut' }} />
+        </div>
+        <span className="text-[10px] font-mono w-10" style={{ color }}>{ours}%</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-[10px] text-gray-500 w-16 text-right">{benchLabel}</span>
+        <div className="flex-1 h-3 bg-white/[0.04] rounded-full overflow-hidden">
+          <motion.div className="h-full rounded-full bg-white/20" initial={{ width: 0 }} animate={{ width: `${benchmark}%` }} transition={{ delay: delay + 0.3, duration: 0.6, ease: 'easeOut' }} />
+        </div>
+        <span className="text-[10px] font-mono text-gray-500 w-10">{benchmark}%</span>
+      </div>
+    </div>
+  </motion.div>
+)
+
+/* Mini QS gauge */
+const MiniGauge = ({ value, max = 10, label, color, delay = 0 }) => {
+  const r = 28, circ = Math.PI * r // semicircle
+  return (
+    <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ delay }} className="flex flex-col items-center gap-1">
+      <svg width="70" height="42" viewBox="0 0 70 42">
+        <path d="M 7 38 A 28 28 0 0 1 63 38" fill="none" stroke="rgba(255,255,255,0.06)" strokeWidth="5" strokeLinecap="round" />
+        <motion.path d="M 7 38 A 28 28 0 0 1 63 38" fill="none" stroke={color} strokeWidth="5" strokeLinecap="round"
+          strokeDasharray={circ} initial={{ strokeDashoffset: circ }} animate={{ strokeDashoffset: circ * (1 - value / max) }}
+          transition={{ delay: delay + 0.3, duration: 0.8, ease: 'easeOut' }} />
+        <text x="35" y="36" textAnchor="middle" fill="white" fontSize="16" fontFamily="monospace" fontWeight="bold">{value}</text>
+      </svg>
+      <span className="text-[10px] text-gray-400">{label}</span>
+    </motion.div>
+  )
+}
+
 function S8() {
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-8 px-16">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[28px] leading-tight font-semibold text-white text-center max-w-[750px]">
+    <div className="flex flex-col items-center justify-center h-full gap-7 px-12">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[34px] leading-tight font-semibold text-white text-center max-w-[800px]">
         Validated against <G>industry benchmarks</G> and known-good inputs
       </motion.h1>
-      <div className="grid grid-cols-2 gap-5 w-full max-w-[900px]">
-        <GlowCard delay={0.2} className="flex flex-col gap-4">
+
+      <div className="grid grid-cols-2 gap-5 w-full max-w-[960px]">
+        {/* QS Formula — show gauges for good vs bad inputs */}
+        <GlowCard delay={0.15} className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#f9d85a]/10 flex items-center justify-center"><Target size={16} className="text-[#f9d85a]" /></div>
-            <span className="text-sm font-bold text-white">Quality Score Formula</span>
+            <div className="w-9 h-9 rounded-lg bg-[#f9d85a]/10 flex items-center justify-center"><Target size={18} className="text-[#f9d85a]" /></div>
+            <span className="text-base font-bold text-white">QS responds to input quality</span>
           </div>
-          <Check text="Positive copy + trending topic = QS 8-10" detail="Negative copy + dying trend = QS 2-3. Matches expected behavior." delay={0.3} />
-          <Check text="Graceful degradation tested" detail="QS re-weights dynamically when vision or trends unavailable." delay={0.4} />
+          <div className="flex justify-around items-end">
+            <div className="flex flex-col items-center gap-1">
+              <MiniGauge value={8.7} label="Positive + trending" color="#22c55e" delay={0.3} />
+              <span className="text-[9px] text-[#22c55e]">High QS</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <MiniGauge value={5.2} label="Neutral + flat" color="#f59e0b" delay={0.4} />
+              <span className="text-[9px] text-[#f59e0b]">Mid QS</span>
+            </div>
+            <div className="flex flex-col items-center gap-1">
+              <MiniGauge value={2.1} label="Negative + dying" color="#ef4444" delay={0.5} />
+              <span className="text-[9px] text-[#ef4444]">Low QS</span>
+            </div>
+          </div>
         </GlowCard>
-        <GlowCard delay={0.3} className="flex flex-col gap-4">
+
+        {/* CPC — animated comparison bars */}
+        <GlowCard delay={0.25} className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#22c55e]/10 flex items-center justify-center"><DollarSign size={16} className="text-[#22c55e]" /></div>
-            <span className="text-sm font-bold text-white">CPC vs. Industry Averages</span>
+            <div className="w-9 h-9 rounded-lg bg-[#22c55e]/10 flex items-center justify-center"><DollarSign size={18} className="text-[#22c55e]" /></div>
+            <span className="text-base font-bold text-white">CPC matches platform data</span>
           </div>
-          <Check text="LinkedIn CPC ~2.4x Meta baseline" detail="Matches real platform premiums from WordStream data." delay={0.4} />
-          <Check text="Platform multipliers calibrated" detail="Google 1.6x, TikTok 0.7x, Snapchat 0.6x against 2025 reports." delay={0.5} />
+          <div className="flex flex-col gap-2">
+            {[
+              { p: 'LinkedIn', ours: 2.4, industry: 2.5, color: '#60a5fa' },
+              { p: 'Google', ours: 1.6, industry: 1.7, color: '#34d399' },
+              { p: 'Meta', ours: 1.0, industry: 1.0, color: '#f9d85a' },
+              { p: 'TikTok', ours: 0.7, industry: 0.65, color: '#f472b6' },
+            ].map((r, i) => (
+              <motion.div key={r.p} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.4 + i * 0.08 }} className="flex items-center gap-2">
+                <span className="text-[11px] text-gray-400 w-14 text-right">{r.p}</span>
+                <div className="flex-1 h-4 bg-white/[0.04] rounded-full overflow-hidden relative">
+                  <motion.div className="h-full rounded-full" style={{ background: `${r.color}60` }}
+                    initial={{ width: 0 }} animate={{ width: `${(r.ours / 2.8) * 100}%` }} transition={{ delay: 0.5 + i * 0.08, duration: 0.5 }} />
+                  {/* Industry marker */}
+                  <motion.div className="absolute top-0 h-full w-0.5 bg-white/40" style={{ left: `${(r.industry / 2.8) * 100}%` }}
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.7 + i * 0.08 }} />
+                </div>
+                <span className="text-[10px] font-mono w-8" style={{ color: r.color }}>{r.ours}x</span>
+              </motion.div>
+            ))}
+            <div className="flex items-center gap-3 mt-1 ml-16">
+              <span className="text-[9px] text-gray-600">Bar = Ours</span>
+              <span className="text-[9px] text-gray-600">| = Industry</span>
+            </div>
+          </div>
         </GlowCard>
-        <GlowCard delay={0.4} className="flex flex-col gap-4">
+
+        {/* LinkedIn — engagement rate comparison bars */}
+        <GlowCard delay={0.35} className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#60a5fa]/10 flex items-center justify-center"><BarChart3 size={16} className="text-[#60a5fa]" /></div>
-            <span className="text-sm font-bold text-white">LinkedIn Predictor</span>
+            <div className="w-9 h-9 rounded-lg bg-[#60a5fa]/10 flex items-center justify-center"><BarChart3 size={18} className="text-[#60a5fa]" /></div>
+            <span className="text-base font-bold text-white">LinkedIn matches published rates</span>
           </div>
-          <Check text="Engagement rates match published data" detail="Carousel 6.6%, Video 5.6%, Text 1.2% per Social Insider 2025." delay={0.5} />
-          <Check text="5,000 training posts from 10 studies" detail="Social Insider, Hootsuite, Buffer, Sprout Social, ClosleyHQ." delay={0.6} />
+          <CompBar label="Carousel" ours={66} benchmark={66} oursLabel="Polaris" benchLabel="Soc. Insider" color="#60a5fa" delay={0.5} />
+          <CompBar label="Video" ours={56} benchmark={56} oursLabel="Polaris" benchLabel="Soc. Insider" color="#a78bfa" delay={0.6} />
+          <CompBar label="Text Only" ours={12} benchmark={12} oursLabel="Polaris" benchLabel="Soc. Insider" color="#f9d85a" delay={0.7} />
         </GlowCard>
-        <GlowCard delay={0.5} className="flex flex-col gap-4">
+
+        {/* NLP — visual sentiment test */}
+        <GlowCard delay={0.45} className="flex flex-col gap-3">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded-lg bg-[#a78bfa]/10 flex items-center justify-center"><Brain size={16} className="text-[#a78bfa]" /></div>
-            <span className="text-sm font-bold text-white">NLP Sanity Checks</span>
+            <div className="w-9 h-9 rounded-lg bg-[#a78bfa]/10 flex items-center justify-center"><Brain size={18} className="text-[#a78bfa]" /></div>
+            <span className="text-base font-bold text-white">Sentiment aligns with expected</span>
           </div>
-          <Check text="Sentiment aligns with obvious inputs" detail={'"Amazing new product!" scores positive. "Terrible experience" scores negative.'} delay={0.6} />
-          <Check text="NER extracts real brand names" detail="Tested against real ad copy. Falls back to noun phrases gracefully." delay={0.7} />
+          {/* Sentiment test cases */}
+          <div className="flex flex-col gap-2">
+            {[
+              { input: '"Amazing new product launch!"', score: 0.92, color: '#22c55e', label: 'Positive' },
+              { input: '"Check out our latest update"', score: 0.51, color: '#f59e0b', label: 'Neutral' },
+              { input: '"Terrible customer experience"', score: 0.08, color: '#ef4444', label: 'Negative' },
+            ].map((t, i) => (
+              <motion.div key={t.input} initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: 0.55 + i * 0.1 }}
+                className="flex items-center gap-3 p-2 rounded-lg bg-white/[0.03]">
+                <span className="text-[10px] text-gray-400 flex-1 italic">{t.input}</span>
+                <div className="w-20 h-3 bg-white/[0.04] rounded-full overflow-hidden">
+                  <motion.div className="h-full rounded-full" style={{ background: t.color }}
+                    initial={{ width: 0 }} animate={{ width: `${t.score * 100}%` }} transition={{ delay: 0.7 + i * 0.1, duration: 0.5 }} />
+                </div>
+                <span className="text-[10px] font-mono w-12" style={{ color: t.color }}>{t.score.toFixed(2)}</span>
+                <span className="text-[9px] font-medium w-14" style={{ color: t.color }}>{t.label}</span>
+              </motion.div>
+            ))}
+          </div>
         </GlowCard>
       </div>
     </div>
@@ -787,33 +1064,39 @@ function S8() {
 
 /* 9 ── Evolution ────────────────────────────────────────────────── */
 function S9() {
-  const rows = [
-    { label: 'Vision', before: 'EfficientNetB0', after: 'Gemini Vision (30+ prompts)' },
-    { label: 'LLM', before: 'GPT-4o-mini', after: 'Gemini Flash (deterministic-first)' },
-    { label: 'Frontend', before: 'Streamlit', after: 'React + Framer Motion + D3' },
-    { label: 'Streaming', before: 'Single response', after: 'SSE (13 progressive events)' },
-    { label: 'Pipeline', before: '4 steps', after: '13 steps' },
-    { label: 'Audience', before: 'Hardcoded', after: 'IAB Taxonomy + Sentence Transformers' },
-    { label: 'LinkedIn', before: 'Not in scope', after: 'HistGBR predictor + timing heatmap' },
-    { label: 'Persistence', before: 'None', after: 'IndexedDB (full session replay)' },
+  const upgrades = [
+    { Icon: Eye, label: 'Vision', from: 'EfficientNetB0', to: 'Gemini Vision', detail: '30+ prompts', color: '#a78bfa' },
+    { Icon: Brain, label: 'LLM', from: 'GPT-4o-mini', to: 'Gemini Flash', detail: 'Deterministic-first', color: '#f9d85a' },
+    { Icon: Monitor, label: 'Frontend', from: 'Streamlit', to: 'React + Framer', detail: 'Full SPA', color: '#34d399' },
+    { Icon: Activity, label: 'Streaming', from: 'Single response', to: 'SSE', detail: '13 live events', color: '#f97316' },
+    { Icon: Layers, label: 'Pipeline', from: '4 steps', to: '13 steps', detail: '3.25x deeper', color: '#60a5fa' },
+    { Icon: Users, label: 'Audience', from: 'Hardcoded', to: 'IAB + Transformers', detail: '1,558 segments', color: '#f472b6' },
   ]
   return (
-    <div className="flex flex-col items-center justify-center h-full gap-8 px-16">
-      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[28px] leading-tight font-semibold text-white text-center max-w-[700px]">
+    <div className="flex flex-col items-center justify-center h-full gap-8 px-12">
+      <motion.h1 initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} className="text-[32px] leading-tight font-semibold text-white text-center max-w-[800px]">
         We expanded <G>well beyond</G> the original proposal
       </motion.h1>
-      <div className="w-full max-w-[700px] flex flex-col gap-3">
-        <div className="flex items-center gap-4 pb-2 border-b border-white/[0.08]">
-          <span className="w-[130px] shrink-0 text-[10px] uppercase tracking-widest text-gray-600 text-right font-mono">Component</span>
-          <span className="flex-1 text-[10px] uppercase tracking-widest text-gray-600 text-right font-mono">Original</span>
-          <span className="w-5" />
-          <span className="flex-1 text-[10px] uppercase tracking-widest text-[#f9d85a]/60 font-mono">What We Built</span>
-        </div>
-        {rows.map((r, i) => <EvoRow key={r.label} {...r} delay={0.2 + i * 0.07} />)}
+
+      <div className="grid grid-cols-3 gap-4 w-full max-w-[960px]">
+        {upgrades.map((u, i) => (
+          <motion.div key={u.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.08 }}
+            className="rounded-2xl p-4 bg-white/[0.04] ring-1 ring-white/[0.07] flex flex-col gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center" style={{ background: `${u.color}15` }}>
+                <u.Icon size={18} style={{ color: u.color }} />
+              </div>
+              <span className="text-base font-bold text-white">{u.label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-gray-600 line-through">{u.from}</span>
+              <ArrowRight size={14} className="text-[#f9d85a] shrink-0" />
+              <span className="text-sm font-semibold" style={{ color: u.color }}>{u.to}</span>
+            </div>
+            <span className="font-mono text-[11px] font-bold px-2 py-0.5 rounded-full self-start" style={{ background: `${u.color}12`, color: u.color }}>{u.detail}</span>
+          </motion.div>
+        ))}
       </div>
-      <GlowCard gold delay={1} className="max-w-[500px] text-center">
-        <span className="text-xs text-gray-300">The core thesis stayed the same &mdash; <span className="text-white font-semibold">pre-deployment evaluation</span>. The implementation grew from a prototype to a full platform.</span>
-      </GlowCard>
     </div>
   )
 }
@@ -829,26 +1112,26 @@ function S10() {
       </motion.h1>
       <div className="w-16 h-px bg-[#f9d85a]/30" />
       <div className="flex gap-8">
-        <GlowCard delay={0.4} className="w-[280px]">
+        <GlowCard delay={0.4} className="w-[320px]">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#f9d85a]/10 flex items-center justify-center"><Play size={14} className="text-[#f9d85a]" /></div>
-            <span className="text-[#f9d85a] font-mono text-[10px] font-bold tracking-widest">SCENARIO 1</span>
+            <div className="w-9 h-9 rounded-lg bg-[#f9d85a]/10 flex items-center justify-center"><Play size={16} className="text-[#f9d85a]" /></div>
+            <span className="text-[#f9d85a] font-mono text-[11px] font-bold tracking-widest">SCENARIO 1</span>
           </div>
-          <span className="text-white font-bold text-lg block mb-2">Ad Evaluation</span>
-          <span className="text-xs text-gray-400 leading-relaxed block mb-3">Upload creative + ad copy on Meta. Full 13-step pipeline with streaming results.</span>
+          <span className="text-white font-bold text-xl block mb-2">Ad Evaluation</span>
+          <span className="text-sm text-gray-400 leading-relaxed block mb-3">Upload creative + copy, full streaming pipeline</span>
           <div className="flex gap-1.5">
             {['Meta', 'Google', 'TikTok'].map(p => (
               <div key={p} className="flex items-center gap-1 px-2 py-1 rounded bg-white/[0.04] text-[9px] text-gray-500"><PIcon name={p} size={10} />{p}</div>
             ))}
           </div>
         </GlowCard>
-        <GlowCard delay={0.5} className="w-[280px]">
+        <GlowCard delay={0.5} className="w-[320px]">
           <div className="flex items-center gap-2 mb-3">
-            <div className="w-8 h-8 rounded-lg bg-[#f9d85a]/10 flex items-center justify-center"><Play size={14} className="text-[#f9d85a]" /></div>
-            <span className="text-[#f9d85a] font-mono text-[10px] font-bold tracking-widest">SCENARIO 2</span>
+            <div className="w-9 h-9 rounded-lg bg-[#f9d85a]/10 flex items-center justify-center"><Play size={16} className="text-[#f9d85a]" /></div>
+            <span className="text-[#f9d85a] font-mono text-[11px] font-bold tracking-widest">SCENARIO 2</span>
           </div>
-          <span className="text-white font-bold text-lg block mb-2">LinkedIn Post</span>
-          <span className="text-xs text-gray-400 leading-relaxed block mb-3">Quality score breakdown, engagement predictions, and timing heatmap.</span>
+          <span className="text-white font-bold text-xl block mb-2">LinkedIn Post</span>
+          <span className="text-sm text-gray-400 leading-relaxed block mb-3">Engagement prediction + timing heatmap</span>
           <div className="flex gap-1.5">
             {['LinkedIn'].map(p => (
               <div key={p} className="flex items-center gap-1 px-2 py-1 rounded bg-white/[0.04] text-[9px] text-gray-500"><PIcon name={p} size={10} />{p}</div>
@@ -872,16 +1155,16 @@ function S11() {
       </motion.h1>
       <div className="flex gap-10 mt-2">
         {[
-          { Icon: ShieldCheck, label: 'EVALUATE', desc: '7 ML models score every dimension of an ad before deployment' },
-          { Icon: TrendingUp, label: 'PREDICT', desc: 'CPC simulation, engagement forecasts, and trend timing in real-time' },
-          { Icon: Zap, label: 'ACT', desc: 'Actionable suggestions grounded in benchmarks and market intelligence' },
+          { Icon: ShieldCheck, label: 'EVALUATE', desc: '7 models score every dimension before deployment' },
+          { Icon: TrendingUp, label: 'PREDICT', desc: 'CPC, engagement, and trend timing in real-time' },
+          { Icon: Zap, label: 'ACT', desc: 'Suggestions grounded in benchmarks and market data' },
         ].map((item, i) => (
-          <motion.div key={item.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.15 }} className="flex flex-col items-center gap-3 w-[200px] text-center">
-            <div className="w-10 h-10 rounded-xl bg-[#f9d85a]/10 flex items-center justify-center">
-              <item.Icon size={20} className="text-[#f9d85a]" />
+          <motion.div key={item.label} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.15 }} className="flex flex-col items-center gap-4 w-[220px] text-center">
+            <div className="w-14 h-14 rounded-2xl bg-[#f9d85a]/10 flex items-center justify-center">
+              <item.Icon size={28} className="text-[#f9d85a]" />
             </div>
-            <span className="text-[#f9d85a] font-mono text-xs font-bold tracking-widest">{item.label}</span>
-            <span className="text-sm text-gray-400 leading-relaxed">{item.desc}</span>
+            <span className="text-[#f9d85a] font-mono text-sm font-bold tracking-widest">{item.label}</span>
+            <span className="text-base text-gray-400 leading-relaxed">{item.desc}</span>
           </motion.div>
         ))}
       </div>
@@ -889,7 +1172,7 @@ function S11() {
         <div className="w-12 h-px bg-white/[0.08]" />
         <span className="text-base text-gray-300 font-medium">Team 8</span>
         <div className="flex gap-6">{['Member 1', 'Member 2', 'Member 3', 'Member 4', 'Member 5'].map(n => <span key={n} className="text-sm text-gray-500">{n}</span>)}</div>
-        <span className="text-xl text-gray-400 mt-4">Questions?</span>
+        <span className="text-2xl text-gray-400 mt-4">Questions?</span>
       </motion.div>
     </div>
   )
