@@ -347,15 +347,29 @@ def run_vision_pipeline(file_path: str, is_video: bool, platform: str = "Meta", 
         'Return ONLY the JSON object. No markdown fences. No explanation.'
     )
 
-    response = gemini_client.models.generate_content(
-        model="gemini-3-flash-preview",
-        contents=[
-            types.Part.from_bytes(data=file_bytes, mime_type=mime),
-            prompt,
-        ],
-    )
+    # Retry Gemini vision calls with exponential backoff
+    response = None
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = gemini_client.models.generate_content(
+                model="gemini-3-flash-preview",
+                contents=[
+                    types.Part.from_bytes(data=file_bytes, mime_type=mime),
+                    prompt,
+                ],
+            )
+            if response.text:
+                break
+        except Exception as e:
+            if attempt < max_retries - 1:
+                wait = 2 ** attempt + 1
+                print(f"⚠️  Gemini vision attempt {attempt + 1}/{max_retries} failed ({e}), retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
 
-    text = response.text
+    text = response.text if response else None
     if not text:
         return None
 
@@ -405,10 +419,29 @@ def run_vision_pipeline(file_path: str, is_video: bool, platform: str = "Meta", 
 # ==========================================
 # PIPELINE 3: TREND FORECASTING
 # ==========================================
+def _pytrends_with_retry(keywords, geo, max_retries=3):
+    """Build pytrends payload with exponential backoff retries on 429/connection errors."""
+    for attempt in range(max_retries):
+        try:
+            pytrends = TrendReq(hl="en-US", tz=360, timeout=(10, 25))
+            pytrends.build_payload(keywords, cat=0, timeframe="today 3-m", geo=geo)
+            return pytrends
+        except Exception as e:
+            err_str = str(e).lower()
+            is_retryable = "429" in err_str or "too many" in err_str or "response" in err_str or "connection" in err_str or "timeout" in err_str
+            if attempt < max_retries - 1 and is_retryable:
+                wait = 2 ** attempt + 1  # 2s, 3s, 5s
+                print(f"⚠️  pytrends attempt {attempt + 1}/{max_retries} failed ({e}), retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                raise
+
+
 def run_trend_analysis(entities: List[str], geo: str) -> Optional[TrendAnalysis]:
     """
     Full Google Trends analysis: momentum + related queries + regional interest.
     Returns structured TrendAnalysis with real data from 3 pytrends endpoints.
+    Includes retry logic for transient pytrends failures.
     """
     if not entities:
         return None
@@ -416,8 +449,7 @@ def run_trend_analysis(entities: List[str], geo: str) -> Optional[TrendAnalysis]
     keywords = entities[:5]
 
     try:
-        pytrends = TrendReq(hl="en-US", tz=360, timeout=(10, 25))
-        pytrends.build_payload(keywords, cat=0, timeframe="today 3-m", geo=geo)
+        pytrends = _pytrends_with_retry(keywords, geo)
 
         # 1. Interest over time → momentum
         momentum = None
@@ -1068,20 +1100,35 @@ Target Audience: {audience}
 Pre-computed Metrics (DO NOT recalculate — just narrate):
 {metrics_payload}"""
 
-    try:
-        response = gemini_client.models.generate_content(
-            model="gemini-3-flash-preview",
-            contents=f"{system_prompt}\n\n{user_prompt}",
-        )
-        text = response.text
-        if text:
-            return text.strip()
-        reason = response.candidates[0].finish_reason if response.candidates else 'unknown'
-        print(f'Gemini returned no text. Finish reason: {reason}')
-        return 'LLM synthesis returned empty. The quantitative metrics above are still valid.'
-    except Exception as e:
-        print(f"⚠️  Gemini error: {e}")
-        return f"LLM synthesis failed: {str(e)}. Review the quantitative metrics above."
+    # Retry Gemini diagnostic calls with exponential backoff
+    max_retries = 3
+    last_error = None
+    for attempt in range(max_retries):
+        try:
+            response = gemini_client.models.generate_content(
+                model="gemini-3-flash-preview",
+                contents=f"{system_prompt}\n\n{user_prompt}",
+            )
+            text = response.text
+            if text:
+                return text.strip()
+            reason = response.candidates[0].finish_reason if response.candidates else 'unknown'
+            print(f'Gemini returned no text (attempt {attempt + 1}). Finish reason: {reason}')
+            if attempt < max_retries - 1:
+                wait = 2 ** attempt + 1
+                print(f"⚠️  Retrying Gemini diagnostic in {wait}s...")
+                time.sleep(wait)
+                continue
+            return 'LLM synthesis returned empty. The quantitative metrics above are still valid.'
+        except Exception as e:
+            last_error = e
+            if attempt < max_retries - 1:
+                wait = 2 ** attempt + 1
+                print(f"⚠️  Gemini diagnostic attempt {attempt + 1}/{max_retries} failed ({e}), retrying in {wait}s...")
+                time.sleep(wait)
+            else:
+                print(f"⚠️  Gemini error after {max_retries} attempts: {e}")
+                return f"LLM synthesis failed: {str(last_error)}. Review the quantitative metrics above."
 
 
 # ==========================================
@@ -1450,6 +1497,14 @@ async def evaluate_ad_stream(
         tmp_path = None
         step_num = 0
 
+        # Calculate total steps dynamically based on configuration
+        # Always: Vision, NER, Sentiment, Hashtag, Trend, SEM, Landing Page,
+        #         Reddit, Benchmarks, Alignment, Audience, Competitor, Diagnostic = 13
+        # Conditional: LinkedIn (+1 when platform=linkedin and post_type set)
+        total_steps = 13
+        if platform.lower() == "linkedin" and post_type:
+            total_steps += 1
+
         def send_step(name, model, input_summary, output_summary, duration_ms, status="ok", note=None):
             nonlocal step_num
             step_num += 1
@@ -1459,6 +1514,7 @@ async def evaluate_ad_stream(
                 "input_summary": input_summary[:200],
                 "output_summary": output_summary[:200],
                 "duration_ms": duration_ms, "status": status, "note": note,
+                "total_steps": total_steps,
             }
             return "data: " + _json.dumps(step_data) + "\n\n"
         async def run_step(name, model, input_summary, fn):

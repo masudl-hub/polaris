@@ -35,7 +35,7 @@ gcloud run deploy polaris \
   --timeout 300 \
   --min-instances 1 \
   --max-instances 3 \
-  --set-env-vars "GEMINI_API_KEY=your-key-here"
+  --set-env-vars "GEMINI_API_KEY=your-key-here,HF_TOKEN=your-huggingface-token-here"
 ```
 
 **What this does:**

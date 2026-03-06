@@ -21,6 +21,7 @@ export function useAnalysis() {
   const [store, setStore] = useState(INITIAL_STORE)
   const [loading, setLoading] = useState(false)
   const [stepCount, setStepCount] = useState(0)
+  const [totalSteps, setTotalSteps] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
   const [progress, setProgress] = useState(0)
   const [done, setDone] = useState(false)
@@ -31,6 +32,7 @@ export function useAnalysis() {
     storeRef.current = fresh
     setStore(fresh)
     setStepCount(0)
+    setTotalSteps(0)
     setProgress(0)
     setCurrentStep('')
     setDone(false)
@@ -75,7 +77,10 @@ export function useAnalysis() {
 
           if (evt.type === 'step') {
             count++
-            const pct = Math.round((count / 12) * 100)
+            // Use total_steps from the backend if available
+            const total = evt.total_steps || 13
+            setTotalSteps(total)
+            const pct = Math.round((count / total) * 100)
             setStepCount(count)
             setProgress(pct)
             setCurrentStep(evt.name || '')
@@ -128,5 +133,5 @@ export function useAnalysis() {
     }
   }, [resetStore])
 
-  return { store, loading, stepCount, currentStep, progress, done, run, resetStore, loadStore, storeRef }
+  return { store, loading, stepCount, totalSteps, currentStep, progress, done, run, resetStore, loadStore, storeRef }
 }

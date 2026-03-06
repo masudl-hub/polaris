@@ -89,8 +89,10 @@ export default function App() {
               <Analyze
                 steps={analysis.store.steps}
                 stepCount={analysis.stepCount}
+                totalSteps={analysis.totalSteps}
                 currentStep={analysis.currentStep}
                 progress={analysis.progress}
+                done={analysis.done}
               />
             </motion.div>
           )}

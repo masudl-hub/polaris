@@ -4,17 +4,29 @@ import { CheckCircle2, XCircle } from 'lucide-react'
 
 /* ─── Model map ────────────────────────────────────────────────────── */
 const STEP_MODELS = {
+  'Visual Analysis + OCR':    'Gemini 3 Flash Preview',
+  'Named Entity Recognition': 'spaCy en_core_web_sm',
   'Text NLP':                 'spaCy NER',
-  'Sentiment Analysis':       'VADER + TextBlob',
-  'Visual Analysis':          'Gemini 2.5 Flash',
+  'Sentiment Analysis':       'RoBERTa (cardiffnlp)',
+  'Hashtag Expansion':        'GloVe Twitter 50d',
+  'Visual Analysis':          'Gemini 3 Flash Preview',
   'Google Trends':            'pytrends API',
+  'Trend Forecasting':        'Google Trends (pytrends)',
+  'SEM Auction Simulation':   'Weighted QS Ensemble',
   'SEM Metrics':              'Google Ads Estimator',
-  'Industry Benchmarks':      'Internal DB',
+  'Industry Benchmarks':      'Static JSON Lookup',
+  'Landing Page Coherence':   'httpx + spaCy + RoBERTa',
   'Landing Page Analysis':    'Lighthouse + Gemini',
+  'Reddit Community Sentiment': 'Reddit API + RoBERTa',
   'Reddit Sentiment':         'Reddit API + VADER',
+  'Trend-to-Creative Alignment': 'GloVe cosine similarity',
   'Trend-Creative Alignment': 'Gemini 2.5 Flash',
+  'Audience Alignment':       'all-MiniLM-L6-v2 + IAB',
+  'Competitor Analysis':      'Meta Ad Library API',
   'Competitor Intelligence':  'SerpAPI + Gemini',
-  'Diagnostic Summary':       'Gemini 2.5 Flash',
+  'LinkedIn Post Prediction': 'HistGradientBoosting + IAB',
+  'Executive Diagnostic':     'Gemini 3 Flash Preview',
+  'Diagnostic Summary':       'Gemini 3 Flash Preview',
   'Final Scoring':            'Weighted Ensemble',
 }
 
@@ -48,9 +60,10 @@ function BackgroundFX() {
 }
 
 /* ─── Hero Counter ─────────────────────────────────────────────────── */
-function HeroCounter({ stepCount }) {
-  const isComplete = stepCount === 12
+function HeroCounter({ stepCount, totalSteps, done }) {
+  const isComplete = done
   const display = String(stepCount).padStart(2, '0')
+  const totalDisplay = String(totalSteps || stepCount).padStart(2, '0')
 
   return (
     <div className="flex items-baseline justify-center gap-3 select-none">
@@ -69,7 +82,7 @@ function HeroCounter({ stepCount }) {
         </motion.span>
       </AnimatePresence>
       <span className="font-mono text-[40px] font-light text-white/20">/</span>
-      <span className="font-mono text-[40px] font-light text-white/20">12</span>
+      <span className="font-mono text-[40px] font-light text-white/20">{totalDisplay}</span>
     </div>
   )
 }
@@ -84,9 +97,9 @@ function ProgressText({ progress }) {
 }
 
 /* ─── Current Step Label ───────────────────────────────────────────── */
-function CurrentStepLabel({ currentStep, stepCount }) {
+function CurrentStepLabel({ currentStep, done }) {
   const model = STEP_MODELS[currentStep] || ''
-  const isComplete = stepCount === 12
+  const isComplete = done
 
   return (
     <div className="flex flex-col items-center mt-6 min-h-[72px]">
@@ -132,9 +145,10 @@ function CurrentStepLabel({ currentStep, stepCount }) {
 }
 
 /* ─── Pipeline Nodes ───────────────────────────────────────────────── */
-function PipelineNodes({ stepCount, steps }) {
+function PipelineNodes({ stepCount, steps, totalSteps }) {
+  const nodeCount = totalSteps || stepCount || 13
   // Build a status array from completed steps
-  const stepStatuses = Array.from({ length: 12 }, (_, i) => {
+  const stepStatuses = Array.from({ length: nodeCount }, (_, i) => {
     const step = steps[i]
     if (step?.status === 'error') return 'error'
     if (i < stepCount) return 'completed'
@@ -169,7 +183,7 @@ function PipelineNodes({ stepCount, steps }) {
             />
           </div>
           {/* Connector line (skip after last dot) */}
-          {i < 11 && (
+          {i < nodeCount - 1 && (
             <div
               className={`h-[2px] flex-1 max-w-[32px] min-w-[12px] w-[20px] ${
                 i < stepCount ? 'bg-[#f9d85a]' : 'bg-white/[0.08]'
@@ -263,23 +277,23 @@ function CompletedStepsList({ steps }) {
 }
 
 /* ─── Main Component ───────────────────────────────────────────────── */
-export default function Analyze({ steps, stepCount, currentStep, progress }) {
+export default function Analyze({ steps, stepCount, totalSteps, currentStep, progress, done }) {
   return (
     <section className="relative flex-1 flex flex-col bg-[#131315] min-h-0 overflow-hidden">
       <BackgroundFX />
 
       <div className="relative z-10 flex-1 flex flex-col max-w-[820px] w-full mx-auto px-6 pt-20 pb-12 min-h-0">
         {/* Hero counter */}
-        <HeroCounter stepCount={stepCount} />
+        <HeroCounter stepCount={stepCount} totalSteps={totalSteps} done={done} />
 
         {/* Progress text */}
         <ProgressText progress={progress} />
 
         {/* Current step label */}
-        <CurrentStepLabel currentStep={currentStep} stepCount={stepCount} />
+        <CurrentStepLabel currentStep={currentStep} done={done} />
 
         {/* Pipeline nodes */}
-        <PipelineNodes stepCount={stepCount} steps={steps} />
+        <PipelineNodes stepCount={stepCount} steps={steps} totalSteps={totalSteps} />
 
         {/* Completed steps */}
         <CompletedStepsList steps={steps} />
