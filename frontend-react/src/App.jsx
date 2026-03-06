@@ -4,6 +4,7 @@ import TopBar from './components/TopBar'
 import Compose from './components/Compose'
 import Analyze from './components/Analyze'
 import Results from './components/Results'
+import Slides from './components/Slides'
 import Toast from './components/Toast'
 import { useTheme } from './hooks/useTheme'
 import { useAnalysis } from './hooks/useAnalysis'
@@ -11,6 +12,14 @@ import { useSessions } from './hooks/useSessions'
 import { viewTransition } from './lib/motion'
 
 export default function App() {
+  // Render slide deck if hash is #slides
+  const [isSlides, setIsSlides] = useState(window.location.hash === '#slides')
+  useEffect(() => {
+    const onHash = () => setIsSlides(window.location.hash === '#slides')
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+  if (isSlides) return <Slides />
   const [view, setView] = useState('compose')
   const [dark, toggleTheme] = useTheme()
   const analysis = useAnalysis()
