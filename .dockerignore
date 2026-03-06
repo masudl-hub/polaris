@@ -1,0 +1,16 @@
+node_modules/
+backend/venv/
+frontend-react/dist/
+frontend-react/node_modules/
+frontend/
+.env
+*.env
+__pycache__/
+*.pyc
+.git/
+.DS_Store
+*.png
+*.log
+.vscode/
+.idea/
+.playwright-mcp/
