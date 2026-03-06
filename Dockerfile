@@ -25,12 +25,14 @@ WORKDIR /app
 
 # Install Python dependencies
 COPY backend/requirements.txt ./backend/
+RUN pip install --no-cache-dir torch --index-url https://download.pytorch.org/whl/cpu
 RUN pip install --no-cache-dir -r backend/requirements.txt
 
 # Download ML models at build time (baked into image — no cold start penalty)
 RUN python -m spacy download en_core_web_sm
-RUN python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='cardiffnlp/twitter-roberta-base-sentiment-latest')"
-RUN python -c "import gensim.downloader as api; api.load('glove-wiki-gigaword-50')"
+RUN python -c "from transformers import pipeline; pipeline('sentiment-analysis', model='cardiffnlp/twitter-roberta-base-sentiment')"
+RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('sentence-transformers/all-MiniLM-L6-v2')"
+RUN python -c "import gensim.downloader as api; api.load('glove-twitter-50')"
 
 # Copy backend code
 COPY backend/ ./backend/
