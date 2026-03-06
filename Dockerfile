@@ -9,7 +9,8 @@ FROM oven/bun:1 AS frontend-build
 
 WORKDIR /app/frontend-react
 COPY frontend-react/package.json frontend-react/bun.lock ./
-RUN bun install
+# Add --ci to prevent interactive prompts or hanging in CI environments
+RUN bun install --ci
 COPY frontend-react/ ./
 RUN bun run build
 
