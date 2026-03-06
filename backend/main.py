@@ -503,9 +503,10 @@ def run_trend_analysis(entities: List[str], geo: str) -> Optional[TrendAnalysis]
         try:
             ibr = pytrends.interest_by_region(resolution="COUNTRY", inc_low_vol=False)
             if not ibr.empty:
-                col = ibr.columns[0]
-                top5 = ibr.nlargest(5, col)
-                top_regions = [{"name": name, "interest": int(row[col])} for name, row in top5.iterrows()]
+                # Average the interest across all queried keywords for each region
+                avg_interest = ibr.mean(axis=1)
+                top5 = avg_interest.nlargest(5)
+                top_regions = [{"name": name, "interest": int(val)} for name, val in top5.items() if val > 0]
         except Exception:
             pass  # interest_by_region can fail independently
 
@@ -1505,6 +1506,15 @@ async def evaluate_ad_stream(
         if platform.lower() == "linkedin" and post_type:
             total_steps += 1
 
+        def send_starting(name, model, total):
+            """Emit a step_starting event so the UI shows progress immediately."""
+            return "data: " + _json.dumps({
+                "type": "step_starting",
+                "name": name,
+                "model": model,
+                "total_steps": total,
+            }) + "\n\n"
+
         def send_step(name, model, input_summary, output_summary, duration_ms, status="ok", note=None):
             nonlocal step_num
             step_num += 1
@@ -1547,11 +1557,21 @@ async def evaluate_ad_stream(
             user_text = f"{headline}. {body}"
             hashtag_list = [h.strip() for h in hashtags.split(",") if h.strip()]
 
+            # ── Immediate feedback: tell the UI the pipeline has started ──
+            yield "data: " + _json.dumps({
+                "type": "pipeline_started",
+                "has_media": bool(has_media),
+                "total_steps": total_steps,
+                "platform": platform,
+            }) + "\n\n"
+
             # STEP 1: Vision + OCR (FIRST - extract text from image before NLP)
             ocr_text = ""
             ocr_brand = ""
             if has_media:
                 media_desc = "video" if is_video else "image"
+                # Tell the UI which step is starting BEFORE the slow call
+                yield send_starting("Visual Analysis + OCR", "Gemini 3 Flash Preview (multimodal)", total_steps)
                 vision_analysis, evt = await run_step(
                     "Visual Analysis + OCR", "Gemini 3 Flash Preview (multimodal)",
                     "File: " + str(media_file.filename) + " (" + str(int(file_size_kb)) + "KB, " + media_desc + ")",
@@ -1633,6 +1653,7 @@ async def evaluate_ad_stream(
                 visual_authenticity = None
 
             # STEP 5: Trend
+            yield send_starting("Trend Forecasting", "Google Trends (pytrends)", total_steps)
             trend_data, evt = await run_step(
                 "Trend Forecasting", "Google Trends (pytrends: momentum + related + regions)",
                 "Keywords: " + str(entities[:5]) + ", Geo: " + geo,
@@ -1664,6 +1685,7 @@ async def evaluate_ad_stream(
             # STEP 7: Landing Page Coherence (async, optional)
             lp_data = None
             if landing_page_url:
+                yield send_starting("Landing Page Coherence", "httpx + spaCy + RoBERTa", total_steps)
                 t0 = time.time()
                 try:
                     lp_data = await run_landing_page_coherence(landing_page_url, entities, sentiment, headline)
@@ -1683,6 +1705,7 @@ async def evaluate_ad_stream(
             # STEP 8: Reddit Community Sentiment (async, optional)
             reddit_data = None
             if entities:
+                yield send_starting("Reddit Community Sentiment", "Reddit JSON + RoBERTa", total_steps)
                 t0 = time.time()
                 try:
                     reddit_data = await run_reddit_sentiment(entities)
@@ -1788,6 +1811,7 @@ async def evaluate_ad_stream(
             )
 
             # STEP 13: LLM
+            yield send_starting("Executive Diagnostic", "Gemini 3 Flash Preview", total_steps)
             diagnostic, evt = await run_step(
                 "Executive Diagnostic", "Gemini 3 Flash Preview",
                 "Platform: " + platform + ", Audience: " + audience + ", QS: " + str(sem_metrics.quality_score),

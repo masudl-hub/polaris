@@ -75,7 +75,15 @@ export function useAnalysis() {
           let evt
           try { evt = JSON.parse(msg.substring(6)) } catch { continue }
 
-          if (evt.type === 'step') {
+          if (evt.type === 'pipeline_started') {
+            // Immediate feedback — pipeline is running, show the UI right away
+            setTotalSteps(evt.total_steps || 13)
+            setCurrentStep(evt.has_media ? 'Uploading media…' : 'Initializing pipeline…')
+          } else if (evt.type === 'step_starting') {
+            // A step is about to run — show its name before the slow call
+            setCurrentStep(evt.name || '')
+            if (evt.total_steps) setTotalSteps(evt.total_steps)
+          } else if (evt.type === 'step') {
             count++
             // Use total_steps from the backend if available
             const total = evt.total_steps || 13

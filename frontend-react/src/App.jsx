@@ -27,6 +27,14 @@ export default function App() {
   const toastRef = useRef()
   const platformRef = useRef('Meta')
   const inputsRef = useRef(null)
+  const mainRef = useRef(null)
+
+  // Scroll to top on view change
+  useEffect(() => {
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0)
+    }
+  }, [view])
 
   useEffect(() => { sessions.refresh() }, [])
 
@@ -71,7 +79,7 @@ export default function App() {
         onSessionClick={handleSessionClick}
         onToggleTheme={toggleTheme}
       />
-      <main className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
+      <main ref={mainRef} className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden">
         <AnimatePresence mode="wait">
           {view === 'compose' && (
             <motion.div
