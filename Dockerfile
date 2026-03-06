@@ -5,13 +5,13 @@
 # ============================================
 
 # --- Stage 1: Build frontend ---
-FROM node:20-slim AS frontend-build
+FROM oven/bun:1 AS frontend-build
 
 WORKDIR /app/frontend-react
-COPY frontend-react/package.json frontend-react/package-lock.json* ./
-RUN npm ci
+COPY frontend-react/package.json frontend-react/bun.lock ./
+RUN bun install
 COPY frontend-react/ ./
-RUN npm run build
+RUN bun run build
 
 # --- Stage 2: Python backend ---
 FROM python:3.11-slim
