@@ -1,6 +1,6 @@
 """
 Tests for Phase 2 Audio Intelligence pipeline.
-Covers: extract_audio_snippet, identify_song_via_audd,
+Covers: extract_audio_snippet, identify_song_via_shazam,
         get_song_trend_momentum, run_audio_intelligence.
 
 22 tests across 6 test classes — all external I/O is mocked.
@@ -116,7 +116,7 @@ class TestExtractAudioSnippet:
 
 
 # ──────────────────────────────────────────────────────────────────
-# 2. identify_song_via_audd
+# 2. identify_song_via_shazam
 # ──────────────────────────────────────────────────────────────────
 
 class TestIdentifySongViaAudd:
@@ -125,7 +125,7 @@ class TestIdentifySongViaAudd:
         import main
         with patch.dict(os.environ, {}, clear=True):
             os.environ.pop("AUDD_API_KEY", None)
-            result = _run(main.identify_song_via_audd(FAKE_MP3))
+            result = _run(main.identify_song_via_shazam(FAKE_MP3))
         assert result is None
 
     def test_happy_path_returns_song_identification(self):
@@ -141,7 +141,7 @@ class TestIdentifySongViaAudd:
 
         with patch.dict(os.environ, {"AUDD_API_KEY": "test-key"}), \
              patch("main.httpx.AsyncClient", return_value=mock_client):
-            result = _run(main.identify_song_via_audd(FAKE_MP3))
+            result = _run(main.identify_song_via_shazam(FAKE_MP3))
 
         assert result is not None
         song, score = result
@@ -164,7 +164,7 @@ class TestIdentifySongViaAudd:
 
         with patch.dict(os.environ, {"AUDD_API_KEY": "test-key"}), \
              patch("main.httpx.AsyncClient", return_value=mock_client):
-            result = _run(main.identify_song_via_audd(FAKE_MP3))
+            result = _run(main.identify_song_via_shazam(FAKE_MP3))
 
         assert result is None
 
@@ -180,7 +180,7 @@ class TestIdentifySongViaAudd:
 
         with patch.dict(os.environ, {"AUDD_API_KEY": "test-key"}), \
              patch("main.httpx.AsyncClient", return_value=mock_client):
-            result = _run(main.identify_song_via_audd(FAKE_MP3))
+            result = _run(main.identify_song_via_shazam(FAKE_MP3))
 
         assert result == (None, None)
 
@@ -201,7 +201,7 @@ class TestIdentifySongViaAudd:
 
         with patch.dict(os.environ, {"AUDD_API_KEY": "test-key"}), \
              patch("main.httpx.AsyncClient", return_value=mock_client):
-            result = _run(main.identify_song_via_audd(FAKE_MP3))
+            result = _run(main.identify_song_via_shazam(FAKE_MP3))
 
         assert result is None
 
@@ -222,7 +222,7 @@ class TestIdentifySongViaAudd:
 
         with patch.dict(os.environ, {"AUDD_API_KEY": "test-key"}), \
              patch("main.httpx.AsyncClient", return_value=mock_client):
-            result = _run(main.identify_song_via_audd(FAKE_MP3))
+            result = _run(main.identify_song_via_shazam(FAKE_MP3))
 
         assert result is not None
         song, score = result
@@ -283,7 +283,7 @@ class TestRunAudioIntelligence:
         import main
         with patch("main._get_video_duration", return_value=10.0), \
              patch("main.extract_audio_snippet", return_value=FAKE_MP3), \
-             patch("main.identify_song_via_audd", new_callable=AsyncMock, return_value=None):
+             patch("main.identify_song_via_shazam", new_callable=AsyncMock, return_value=None):
             result = _run(main.run_audio_intelligence("/fake/video.mp4"))
 
         assert result is None
@@ -295,7 +295,7 @@ class TestRunAudioIntelligence:
 
         with patch("main._get_video_duration", return_value=10.0), \
              patch("main.extract_audio_snippet", return_value=FAKE_MP3), \
-             patch("main.identify_song_via_audd", new_callable=AsyncMock, return_value=(base_song, 85)), \
+             patch("main.identify_song_via_shazam", new_callable=AsyncMock, return_value=(base_song, 85)), \
              patch("main.get_song_trend_momentum", new_callable=AsyncMock, return_value=0.85):
             result = _run(main.run_audio_intelligence("/fake/video.mp4"))
 
@@ -310,7 +310,7 @@ class TestRunAudioIntelligence:
 
         with patch("main._get_video_duration", return_value=10.0), \
              patch("main.extract_audio_snippet", return_value=FAKE_MP3), \
-             patch("main.identify_song_via_audd", new_callable=AsyncMock, return_value=(base_song, 80)), \
+             patch("main.identify_song_via_shazam", new_callable=AsyncMock, return_value=(base_song, 80)), \
              patch("main.get_song_trend_momentum", new_callable=AsyncMock, return_value=None):
             result = _run(main.run_audio_intelligence("/fake/video.mp4"))
 

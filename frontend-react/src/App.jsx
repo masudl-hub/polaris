@@ -6,6 +6,7 @@ import Analyze from './components/Analyze'
 import Results from './components/Results'
 import Slides from './components/Slides'
 import Toast from './components/Toast'
+import DemoGallery from './components/DemoGallery'
 import { useTheme } from './hooks/useTheme'
 import { useAnalysis } from './hooks/useAnalysis'
 import { useSessions } from './hooks/useSessions'
@@ -24,6 +25,7 @@ export default function App() {
   const [dark, toggleTheme] = useTheme()
   const analysis = useAnalysis()
   const sessions = useSessions()
+  const [selectedDemo, setSelectedDemo] = useState(null)
   const toastRef = useRef()
   const platformRef = useRef('Meta')
   const inputsRef = useRef(null)
@@ -56,6 +58,16 @@ export default function App() {
     )
   }, [analysis, sessions])
 
+  const handleDemoSelect = useCallback((demo) => {
+    // Just load it into state for Compose to pick up via prop
+    setSelectedDemo(demo);
+    
+    // Scroll to top so the user sees the filled input form
+    if (mainRef.current) {
+      mainRef.current.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, []);
+
   const handleSessionClick = useCallback(async (id) => {
     const record = await sessions.load(id)
     if (record?.store) {
@@ -86,11 +98,31 @@ export default function App() {
               key="compose"
               {...viewTransition}
             >
-              <Compose 
-                loading={analysis.loading} 
-                onSubmit={handleSubmit} 
-                analysis={analysis} 
-              />
+              <div className="max-w-7xl mx-auto py-8">
+                <Compose 
+                  loading={analysis.loading} 
+                  onSubmit={handleSubmit} 
+                  analysis={analysis} 
+                  demoData={selectedDemo}
+                />
+
+                <div className="mt-16 mb-8 px-6">
+                  <div className="relative">
+                    <div className="absolute inset-0 flex items-center" aria-hidden="true">
+                      <div className="w-full border-t border-gray-200 dark:border-gray-800"></div>
+                    </div>
+                    <div className="relative flex justify-center">
+                      <span className="px-3 bg-[#f4f5f7] dark:bg-[#111113] text-xs font-bold text-gray-400 uppercase tracking-widest">
+                        Quick Demo Library
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 pb-12">
+                  <DemoGallery onSelect={handleDemoSelect} />
+                </div>
+              </div>
             </motion.div>
           )}
           {view === 'analyze' && (

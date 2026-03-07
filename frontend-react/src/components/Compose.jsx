@@ -6,7 +6,7 @@ import {
   Cpu, GraduationCap, Car, Plane, Building2,
   Users, Briefcase, Crown, BadgeDollarSign, Dumbbell,
   Monitor, BookOpen, Store, Utensils, Gamepad2, Leaf, Trophy,
-  ChevronRight, RefreshCcw, Youtube
+  ChevronRight, RefreshCcw, Youtube, Volume2, VolumeX
 } from 'lucide-react'
 import { feature } from 'topojson-client'
 import { geoPath, geoMercator } from 'd3-geo'
@@ -241,10 +241,11 @@ function VariantSelector({ variants, onSelect, loading }) {
 }
 
 /* ═══════════════════════════════════════════════════════════════════ */
-export default function Compose({ loading, onSubmit, analysis }) {
+export default function Compose({ loading, onSubmit, analysis, demoData }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [isVideo, setIsVideo] = useState(false)
+  const [muted, setMuted] = useState(true)
   const [headline, setHeadline] = useState('')
   const [body, setBody] = useState('')
   const [audience, setAudience] = useState('')
@@ -271,6 +272,64 @@ export default function Compose({ loading, onSubmit, analysis }) {
   const [ytMsg, setYtMsg] = useState('')
   const [ytError, setYtError] = useState('')
 
+  // Populate from demo shortcut
+  useEffect(() => {
+    if (demoData) {
+      if (demoData.headline !== undefined) setHeadline(demoData.headline)
+      if (demoData.body !== undefined) setBody(demoData.body)
+      if (demoData.platform) setPlatform(demoData.platform)
+      if (demoData.industry) setIndustry(demoData.industry)
+      if (demoData.postType) setPostType(demoData.postType)
+      if (demoData.followerCount) setFollowerCount(demoData.followerCount)
+      // Populate all optional fields for richer analysis
+      if (demoData.audience) setAudience(demoData.audience)
+      if (demoData.hashtags) setHashtags(demoData.hashtags.map(h => h.replace(/^#/, '')))
+      if (demoData.placements) setPlacements(demoData.placements)
+      if (demoData.geo) setGeo(demoData.geo)
+      if (demoData.landingUrl !== undefined) setLandingUrl(demoData.landingUrl)
+      if (demoData.competitor !== undefined) setCompetitor(demoData.competitor)
+      if (demoData.cpc != null) setCpc(demoData.cpc)
+      if (demoData.budget != null) setBudget(demoData.budget)
+      
+      if (demoData.localAsset) {
+        setYtUrl('')
+        fetch(demoData.localAsset)
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`)
+            return res.blob()
+          })
+          .then(blob => {
+            const filename = demoData.localAsset.split('/').pop()
+            const videoFile = new File([blob], filename, { type: 'video/mp4' })
+            setFile(videoFile)
+            setPreview(URL.createObjectURL(blob))
+            setIsVideo(true)
+          })
+          .catch(err => {
+            console.warn('Local asset failed, falling back to URL:', err)
+            // Fall back to YouTube URL if local asset unavailable
+            if (demoData.url) {
+              setYtUrl(demoData.url)
+              setFile(null)
+              setPreview(null)
+              setIsVideo(false)
+            }
+          })
+      } else if (demoData.url) {
+        // No local asset — use YouTube URL directly
+        setYtUrl(demoData.url)
+        setFile(null)
+        setPreview(null)
+        setIsVideo(false)
+      } else {
+        setYtUrl('')
+        setFile(null)
+        setPreview(null)
+        setIsVideo(false)
+      }
+    }
+  }, [demoData])
+
   // Restore all form fields when a session is loaded
   useEffect(() => {
     const inp = analysis?.inputs
@@ -295,13 +354,16 @@ export default function Compose({ loading, onSubmit, analysis }) {
       setIsVideo(false)
     } else if (inp.fileName && inp.fileType?.startsWith('video/')) {
       setIsVideo(true)
+      setMuted(true)
     }
   }, [analysis?.inputs])
 
   const handleFile = useCallback((f) => {
     setFile(f)
     setPreview(URL.createObjectURL(f))
-    setIsVideo(f.type.startsWith('video/'))
+    const isVid = f.type.startsWith('video/')
+    setIsVideo(isVid)
+    if (isVid) setMuted(true)
   }, [])
 
   const clearFile = useCallback((e) => {
@@ -309,6 +371,7 @@ export default function Compose({ loading, onSubmit, analysis }) {
     setFile(null)
     setPreview(null)
     setIsVideo(false)
+    setMuted(true)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
 
@@ -505,7 +568,7 @@ export default function Compose({ loading, onSubmit, analysis }) {
               <img className="absolute inset-0 w-full h-full object-cover" src={preview} alt="" />
             )}
             {preview && isVideo && (
-              <video className="absolute inset-0 w-full h-full object-cover" src={preview} ref={videoRef} muted loop autoPlay />
+              <video className="absolute inset-0 w-full h-full object-cover" src={preview} ref={videoRef} muted={muted} loop autoPlay />
             )}
             {preview && (
               <>
@@ -519,6 +582,14 @@ export default function Compose({ loading, onSubmit, analysis }) {
                 >
                   <X size={14} />
                 </button>
+                {isVideo && (
+                  <button
+                    className="absolute top-3 right-12 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
+                    onClick={() => setMuted(!muted)}
+                  >
+                    {muted ? <VolumeX size={14} /> : <Volume2 size={14} />}
+                  </button>
+                )}
               </>
             )}
           </div>

@@ -13,7 +13,7 @@ import math
 import statistics
 import numpy as np
 import pandas as pd
-from typing import List, Optional, Dict, Callable
+from typing import List, Optional, Dict, Callable, Any
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
@@ -704,46 +704,56 @@ def _get_video_duration(video_path: str) -> Optional[float]:
     return None
 
 
-async def identify_song_via_audd(audio_bytes: bytes) -> Optional[SongIdentification]:
+async def identify_song_via_shazam(audio_bytes: bytes) -> Optional[SongIdentification]:
     """
-    POST MP3 bytes to AudD REST API and return a SongIdentification if a match is found.
-    Returns None if no API key, no match, or any network/parsing error.
+    Pass MP3 bytes to Shazamio for acoustic fingerprinting.
+    Returns structured SongIdentification or None on any failure/no match.
     """
-    audd_key = os.getenv("AUDD_API_KEY")
-    if not audd_key:
-        return None
-
     try:
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(
-                "https://api.audd.io/",
-                data={"api_token": audd_key, "return": "timecode"},
-                files={"audio": ("snippet.mp3", audio_bytes, "audio/mpeg")},
-            )
-        data = resp.json()
-        if data.get("status") != "success" or not data.get("result"):
-            return None
+        from shazamio import Shazam
+        shazam = Shazam()
+        data = await shazam.recognize(audio_bytes)
+        
+        matches = data.get("matches", [])
+        if not matches:
+            return None, None
 
-        r = data["result"]
-        title = r.get("title", "").strip()
-        artist = r.get("artist", "").strip()
+        track = data.get("track", {})
+        title = track.get("title", "").strip()
+        artist = track.get("subtitle", "").strip()
+
         if not title or not artist:
-            return None
+            return None, None
+        
+        # Shazamio doesn't return nice normalized scores, so we use a dummy score
+        # unless there's some useful specific logic we can find.
+        # It's either match or no match.
+        score = 100 
+        
+        album = None
+        release_date = None
+        for section in track.get("sections", []):
+            if section.get("type") == "SONG":
+                for meta in section.get("metadata", []):
+                    if meta.get("title") == "Album":
+                        album = meta.get("text")
+                    elif meta.get("title") == "Released":
+                        release_date = meta.get("text")
 
-        # AudD returns a confidence score (0-100) when available
-        score = r.get("score")
+        song_link = track.get("share", {}).get("href")
 
         return SongIdentification(
             title=title,
             artist=artist,
-            album=r.get("album"),
-            release_date=r.get("release_date"),
-            match_timecode=r.get("timecode"),
-            song_link=r.get("song_link"),
-            trend_momentum=None,  # filled by get_song_trend_momentum()
+            album=album,
+            release_date=release_date,
+            match_timecode=None,
+            song_link=song_link,
+            trend_momentum=None,
         ), score
+
     except Exception as e:
-        print(f"⚠️  AudD API error: {e}")
+        print(f"⚠️  Shazam API error: {e}")
         return None, None
 
 
@@ -766,10 +776,10 @@ async def run_audio_intelligence(video_path: str) -> Optional[SongIdentification
     """
     Orchestrate full audio intelligence pipeline:
       1. Extract multiple MP3 snippets from different positions in the video
-      2. Fingerprint each via AudD REST API (best match wins)
+      2. Fingerprint each via Shazam API (best match wins)
       3. Enrich with pytrends momentum
     
-    Multi-segment approach: for covers/remixes of popular songs, AudD often
+    Multi-segment approach: for covers/remixes of popular songs, Shazam often
     matches differently depending on which part of the audio it hears. By
     sampling multiple segments we get more reliable identification.
     """
@@ -790,7 +800,7 @@ async def run_audio_intelligence(video_path: str) -> Optional[SongIdentification
         if audio_bytes is None:
             continue
 
-        result = await identify_song_via_audd(audio_bytes)
+        result = await identify_song_via_shazam(audio_bytes)
         if result is None:
             continue
 
@@ -800,7 +810,7 @@ async def run_audio_intelligence(video_path: str) -> Optional[SongIdentification
 
         # Use score if available, else treat first match as baseline
         match_score = score if score is not None else 50
-        print(f"🎵 AudD segment @{start}s: {song.title} by {song.artist} (score: {match_score})")
+        print(f"🎵 Shazam segment @{start}s: {song.title} by {song.artist} (score: {match_score})")
 
         if match_score > best_score:
             best_score = match_score
@@ -1066,21 +1076,32 @@ def run_entity_atomization(entities: List[str], geo: str) -> Optional[EntityAtom
 def select_top_entities_for_cultural_context(
     entity_atomization: Optional[EntityAtomization],
     fallback_entities: List[str],
+    song_id: Optional[SongIdentification] = None,
     max_entities: int = 3,
 ) -> List[str]:
     """
     Returns up to max_entities entity names for Perplexity Sonar queries.
     Prefers high-momentum nodes from EntityAtomization (sorted descending).
     Falls back to raw entity list when atomization is unavailable or empty.
+    If a song_id is provided, it is always included as the first entity to provide context.
     """
+    selected = []
+    
+    if song_id and song_id.title and song_id.artist:
+        selected.append(f'Song: "{song_id.title}" by {song_id.artist}')
+        max_entities -= 1
+
     if entity_atomization and entity_atomization.nodes:
         sorted_nodes = sorted(
             entity_atomization.nodes,
             key=lambda n: n.momentum if n.momentum is not None else 0.0,
             reverse=True,
         )
-        return [n.name for n in sorted_nodes[:max_entities]]
-    return fallback_entities[:max_entities]
+        selected.extend([n.name for n in sorted_nodes[:max_entities]])
+    else:
+        selected.extend(fallback_entities[:max_entities])
+        
+    return selected
 
 
 async def query_entity_cultural_context(
@@ -1334,6 +1355,7 @@ async def run_cultural_context(
     entity_atomization: Optional[EntityAtomization],
     fallback_entities: List[str],
     geo: str,
+    song_id: Optional[SongIdentification] = None,
 ) -> Optional[CulturalContext]:
     """
     Orchestrate Perplexity Sonar calls for the top-3 highest-momentum entities.
@@ -1342,10 +1364,12 @@ async def run_cultural_context(
     """
     pplx_key = os.getenv("PERPLEXITY_API_KEY")
     if not pplx_key:
-        print("\u26a0\ufe0f  PERPLEXITY_API_KEY not set — cultural context skipped")
+        print("\u26a0\ufe0f  PERPLEXITY_API_KEY not set \u2014 cultural context skipped")
         return None
 
-    entities = select_top_entities_for_cultural_context(entity_atomization, fallback_entities)
+    entities = select_top_entities_for_cultural_context(
+        entity_atomization, fallback_entities, song_id=song_id
+    )
     if not entities:
         return None
 
@@ -1547,6 +1571,61 @@ def _extract_holistic_signals(
     }
 
 
+def _cultural_sentiment_label(score: float) -> str:
+    if score >= 0.75:
+        return "positive"
+    if score >= 0.55:
+        return "mildly positive"
+    if score >= 0.45:
+        return "neutral-leaning"
+    if score >= 0.35:
+        return "mixed"
+    return "negative"
+
+
+def _summarize_cultural_context(cultural_context: Optional["CulturalContext"]) -> Optional[Dict[str, Any]]:
+    if not cultural_context or not cultural_context.entity_contexts:
+        return None
+
+    sentiment_values = []
+    high_risk = []
+    trending = []
+    moments = []
+
+    for ec in cultural_context.entity_contexts:
+        score = _CULTURAL_SENTIMENT_FLOAT.get(ec.cultural_sentiment, 0.5)
+        sentiment_values.append(score)
+        if ec.advertising_risk in ("medium", "high"):
+            high_risk.append(f"{ec.entity_name} ({ec.advertising_risk})")
+        if ec.trending_direction and ec.trending_direction.lower() != "stable":
+            trending.append(f"{ec.entity_name} ({ec.trending_direction})")
+        if ec.cultural_moments:
+            moments.append(ec.cultural_moments[0])
+
+    if not sentiment_values:
+        return None
+
+    avg_score = round(sum(sentiment_values) / len(sentiment_values), 3)
+    tone = _cultural_sentiment_label(avg_score)
+
+    narrative_parts = [f"Cultural signals across {len(sentiment_values)} contexts read as {tone} (avg {avg_score})."]
+    if high_risk:
+        narrative_parts.append(f"Elevated risk appears in {', '.join(high_risk)}.")
+    if trending:
+        narrative_parts.append(f"Trending narratives include {', '.join(trending)}.")
+    if moments:
+        narrative_parts.append(f"Cultural moments captured: {', '.join(moments[:3])}.")
+
+    return {
+        "summary": " ".join(narrative_parts),
+        "tone": tone,
+        "average_score": avg_score,
+        "high_risk_entities": high_risk,
+        "trending_entities": trending,
+        "moments": moments[:3],
+    }
+
+
 def calculate_sem_metrics(
     sentiment_score,
     trend_momentum,
@@ -1646,8 +1725,15 @@ async def run_landing_page_coherence(url: str, ad_entities: List[str], ad_sentim
         return None
 
     try:
+        _browser_headers = {
+            "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept-Encoding": "gzip, deflate, br",
+            "Cache-Control": "no-cache",
+        }
         async with httpx.AsyncClient(timeout=15.0, follow_redirects=True) as client:
-            resp = await client.get(url, headers={"User-Agent": "Polaris/1.0"})
+            resp = await client.get(url, headers=_browser_headers)
             resp.raise_for_status()
 
         soup = BeautifulSoup(resp.text, "html.parser")
@@ -2330,6 +2416,8 @@ def _build_signal_brief(
     }
 
     # Composite sentiment breakdown — replace the old thin reddit_avg_sentiment entry
+    cultural_summary = _summarize_cultural_context(metrics.cultural_context)
+
     if metrics.composite_sentiment:
         cs = metrics.composite_sentiment
         sentiment_section: dict = {
@@ -2344,20 +2432,15 @@ def _build_signal_brief(
             sentiment_section["community_reddit"] = round(cs.reddit_score, 3)
         if cs.landing_score is not None:
             sentiment_section["landing_alignment"] = round(cs.landing_score, 3)
-        # Include per-entity cultural sentiment for richer narrative
-        if metrics.cultural_context and metrics.cultural_context.entity_contexts:
-            sentiment_section["per_entity"] = [
-                {
-                    "entity": ec.entity_name,
-                    "sentiment": ec.cultural_sentiment,
-                    "trending": ec.trending_direction,
-                    "risk": ec.advertising_risk,
-                }
-                for ec in metrics.cultural_context.entity_contexts
-            ]
-        brief["sentiment"] = sentiment_section
+        cultural_summary = _summarize_cultural_context(metrics.cultural_context)
+        if cultural_summary:
+            sentiment_section["cultural_story"] = cultural_summary["summary"]
+            brief["cultural_story"] = cultural_summary
+            brief["sentiment"] = sentiment_section
     elif metrics.text_data.sentiment_score is not None:
         brief["sentiment"] = {"composite_score": metrics.text_data.sentiment_score, "signals_available": 1}
+    if cultural_summary and "cultural_story" not in brief:
+        brief["cultural_story"] = cultural_summary
 
     if metrics.industry_benchmark:
         ib = metrics.industry_benchmark
@@ -2922,7 +3005,9 @@ async def evaluate_ad(
         step_num += 1
         t0 = time.time()
         try:
-            cultural_context_data = await run_cultural_context(entity_atomization, entities, geo)
+            cultural_context_data = await run_cultural_context(
+                entity_atomization, entities, geo, song_id=song_id
+            )
             elapsed = int((time.time() - t0) * 1000)
             status = "ok" if cultural_context_data else "warning"
             trace.append(PipelineStep(
@@ -3471,7 +3556,7 @@ async def evaluate_ad_stream(
             t0 = time.time()
             try:
                 cultural_context_data = await run_cultural_context(
-                    entity_atomization, entities, geo
+                    entity_atomization, entities, geo, song_id=song_id
                 )
                 elapsed = int((time.time() - t0) * 1000)
                 out_summary = str(cultural_context_data)[:200] if cultural_context_data else "(skipped — no API key)"

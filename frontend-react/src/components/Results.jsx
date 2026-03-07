@@ -160,35 +160,40 @@ export default function Results({ store, sessions = [], currentSessionId, onBack
       </div>
 
       <div className="max-w-[1400px] mx-auto px-4 md:px-8 py-10 space-y-8">
+        {/* 1. TOP METRICS & SCORES */}
         <OverviewHero store={store} />
 
         {compareStore && (
           <EvolutionSection currentStore={store} previousStore={compareStore} />
         )}
 
-        {/* Media & Audio first for video — user sees scenes, entities, song right away */}
-        {store.mediaDecomposition && <MediaSection mediaDecomposition={store.mediaDecomposition} />}
-        {store.audioIntelligence && <AudioSection data={store.audioIntelligence} />}
-
         {store.linkedin && <LinkedInSection linkedin={store.linkedin} />}
-
+        
         <SentimentCard sentiment={store.sentiment} compositeScore={store.text?.sentiment_score} compositeSentiment={store.compositeSentiment} />
 
-        <TrendsSection trends={store.trends} alignment={store.alignment} />
-        <ResonanceSection resonanceGraph={store.resonanceGraph} />
-        <EntityAtomizationSection entityAtomization={store.entityAtomization} />
-        <CulturalContextSection culturalContext={store.culturalContext} />
+        {/* 2. FOUND / EXTRACTED (What Polaris Saw) */}
+        {store.mediaDecomposition && <MediaSection mediaDecomposition={store.mediaDecomposition} />}
+        {store.audioIntelligence && <AudioSection data={store.audioIntelligence} />}
+        {!store.mediaDecomposition && <CreativeCard vision={store.vision} />}
         <LanguageSection text={store.text} />
+        <EntityAtomizationSection entityAtomization={store.entityAtomization} />
+
+        {/* 3. CALCULATIONS, CONTEXT & CROSS-REFERENCING (How Polaris Interprets It) */}
+        <ResonanceSection resonanceGraph={store.resonanceGraph} />
+        <TrendsSection trends={store.trends} alignment={store.alignment} />
+        <CulturalContextSection culturalContext={store.culturalContext} />
         <MarketSection
           benchmark={store.benchmark}
           landing={store.landing}
           reddit={store.reddit}
           competitor={store.competitor}
         />
-        {/* Fallback to CreativeCard for non-video (image/text-only) */}
-        {!store.mediaDecomposition && <CreativeCard vision={store.vision} />}
-        <DiagnosticSection diagnostic={store.diagnostic} />
+
+        {/* 4. PIPELINE (How Polaris Did It) */}
         <PipelineSection steps={store.steps} />
+
+        {/* 5. EXECUTIVE SUMMARY (Final Synthesis) */}
+        <DiagnosticSection diagnostic={store.diagnostic} />
       </div>
     </motion.section>
   )

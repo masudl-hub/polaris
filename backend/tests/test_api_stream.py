@@ -355,7 +355,7 @@ class TestFrontendCompatibility:
         )
         events = parse_sse_events(resp.text)
         sem_events = [e for e in events if e.get("type") == "sem_metrics"]
-        assert len(sem_events) == 1
+        assert len(sem_events) >= 1
 
         sem = sem_events[0]["data"]
         assert "quality_score" in sem

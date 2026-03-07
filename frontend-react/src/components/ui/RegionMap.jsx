@@ -3,7 +3,8 @@ import { motion } from 'framer-motion'
 import { feature } from 'topojson-client'
 import { geoPath, geoMercator, geoAlbersUsa } from 'd3-geo'
 
-const WORLD_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json'
+// 50m atlas includes ~241 countries + territories (vs 177 in 110m)
+const WORLD_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-50m.json'
 const US_URL = 'https://cdn.jsdelivr.net/npm/us-atlas@3/states-10m.json'
 
 const US_STATES = new Set([
@@ -16,6 +17,63 @@ const US_STATES = new Set([
   'Tennessee','Texas','Utah','Vermont','Virginia','Washington','West Virginia',
   'Wisconsin','Wyoming','District of Columbia',
 ])
+
+/**
+ * Google Trends returns full region names, but the world-atlas TopoJSON uses
+ * Natural Earth abbreviated names. This map resolves the mismatch.
+ * Keys are lowercased Google Trends names → values are atlas names.
+ */
+const NAME_ALIASES = {
+  // Abbreviation expansions (atlas uses short forms)
+  'cayman islands': 'Cayman Is.',
+  'british virgin islands': 'British Virgin Is.',
+  'u.s. virgin islands': 'U.S. Virgin Is.',
+  'us virgin islands': 'U.S. Virgin Is.',
+  'northern mariana islands': 'N. Mariana Is.',
+  'marshall islands': 'Marshall Is.',
+  'solomon islands': 'Solomon Is.',
+  'falkland islands': 'Falkland Is.',
+  'cook islands': 'Cook Is.',
+  'turks and caicos islands': 'Turks and Caicos Is.',
+  'french polynesia': 'Fr. Polynesia',
+  'french southern territories': 'Fr. S. Antarctic Lands',
+  'western sahara': 'W. Sahara',
+  'central african republic': 'Central African Rep.',
+  'dominican republic': 'Dominican Rep.',
+  'czech republic': 'Czechia',
+  'democratic republic of the congo': 'Dem. Rep. Congo',
+  'republic of the congo': 'Congo',
+  'equatorial guinea': 'Eq. Guinea',
+  'south sudan': 'S. Sudan',
+  'north korea': 'North Korea',
+  'south korea': 'South Korea',
+  'bosnia and herzegovina': 'Bosnia and Herz.',
+  'north macedonia': 'North Macedonia',
+  'saint helena': 'St. Helena',
+  'st. helena': 'St. Helena',
+  'saint kitts and nevis': 'St. Kitts and Nevis',
+  'saint lucia': 'St. Lucia',
+  'saint vincent and the grenadines': 'St. Vin. and Gren.',
+  'saint pierre and miquelon': 'St-Pierre-et-Miquelon',
+  'são tomé and príncipe': 'São Tomé and Principe',
+  'sint maarten': 'Sint Maarten',
+  'antigua and barbuda': 'Antigua and Barb.',
+  'trinidad and tobago': 'Trinidad and Tobago',
+  'bosnia & herzegovina': 'Bosnia and Herz.',
+  'united states': 'United States of America',
+  'usa': 'United States of America',
+  'united kingdom': 'United Kingdom',
+  'uk': 'United Kingdom',
+  'macau': 'Macao',
+  'myanmar': 'Myanmar',
+  'burma': 'Myanmar',
+  'ivory coast': "Côte d'Ivoire",
+  'cote d\'ivoire': "Côte d'Ivoire",
+  'east timor': 'Timor-Leste',
+  'timor-leste': 'Timor-Leste',
+  'eswatini': 'eSwatini',
+  'swaziland': 'eSwatini',
+}
 
 function isUSState(name) {
   return US_STATES.has(name)
@@ -145,9 +203,20 @@ function RegionMap({ regions = [] }) {
       }
       if (!state && worldGeo) {
         const lower = name.toLowerCase()
+        // Check alias map first (Google Trends name → atlas name)
+        const aliasTarget = NAME_ALIASES[lower]
         const feat = worldGeo.features.find(f => {
-          const n = (f.properties.name || '').toLowerCase()
-          return n === lower || n.includes(lower) || lower.includes(n)
+          const n = (f.properties.name || '')
+          const nLower = n.toLowerCase()
+          // Exact match (case-insensitive)
+          if (nLower === lower) return true
+          // Alias match (resolved name)
+          if (aliasTarget && n === aliasTarget) return true
+          // Substring match (either direction) as fallback
+          if (nLower.length > 3 && lower.length > 3) {
+            if (nLower.includes(lower) || lower.includes(nLower)) return true
+          }
+          return false
         })
         return { name, interest, feature: feat || null, isState: false }
       }

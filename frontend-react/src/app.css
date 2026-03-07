@@ -72,9 +72,24 @@
 .diagnostic-prose h3 { font-size: 15px; }
 .diagnostic-prose p { margin-bottom: 1em; }
 .diagnostic-prose strong { color: #ffffff; font-weight: 600; }
+/* Section headers: bold that opens a paragraph becomes its own line */
+.diagnostic-prose p > strong:first-child {
+  display: block;
+  font-size: 15px;
+  letter-spacing: 0.01em;
+  margin-bottom: 0.3em;
+}
 .diagnostic-prose a { color: #f9d85a; text-decoration: underline; text-underline-offset: 2px; }
 .diagnostic-prose a:hover { text-decoration: none; }
-.diagnostic-prose ul, .diagnostic-prose ol { padding-left: 1.25em; margin-bottom: 1em; }
+.diagnostic-prose ul, .diagnostic-prose ol {
+  padding-left: 1.25em;
+  margin-bottom: 1em;
+  list-style-type: disc;
+  list-style-position: outside;
+}
+.diagnostic-prose ol {
+  list-style-type: decimal;
+}
 .diagnostic-prose li { margin-bottom: 0.35em; }
 .diagnostic-prose li::marker { color: #f9d85a; }
 .diagnostic-prose code {
