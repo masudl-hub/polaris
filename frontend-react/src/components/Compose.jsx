@@ -6,6 +6,7 @@ import {
   Cpu, GraduationCap, Car, Plane, Building2,
   Users, Briefcase, Crown, BadgeDollarSign, Dumbbell,
   Monitor, BookOpen, Store, Utensils, Gamepad2, Leaf, Trophy,
+  ChevronRight, RefreshCcw, Youtube
 } from 'lucide-react'
 import { feature } from 'topojson-client'
 import { geoPath, geoMercator } from 'd3-geo'
@@ -189,6 +190,7 @@ const chipVariants = {
 const CARD = 'bg-white dark:bg-[#1e1e21] rounded-[1.25rem] border border-gray-200/60 dark:border-white/[0.10]'
 const CARD_DARK = 'bg-[#1a1a1c] rounded-[1.25rem] text-white'
 
+/* ── Label component ───────────────────────────────────────────────── */
 function Label({ children }) {
   return (
     <div className="text-[11px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-[0.12em] mb-3">
@@ -197,8 +199,49 @@ function Label({ children }) {
   )
 }
 
+/* ── Variant Suggestion component ───────────────────────────────────── */
+function VariantSelector({ variants, onSelect, loading }) {
+  if (loading) {
+    return (
+      <div className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-white/5 rounded-2xl animate-pulse">
+        <Loader2 size={20} className="animate-spin text-[#f9d85a]" />
+        <span className="text-[13px] font-medium text-gray-500">Generating AI variants...</span>
+      </div>
+    )
+  }
+  if (!variants || variants.length === 0) return null
+
+  return (
+    <div className="space-y-3 mt-4">
+      <div className="flex items-center gap-2 px-1">
+        <Sparkles size={14} className="text-[#f9d85a]" />
+        <span className="text-[12px] font-bold uppercase tracking-wider text-gray-400">AI Improvements</span>
+      </div>
+      <div className="grid grid-cols-1 gap-3">
+        {variants.map((v, i) => (
+          <button
+            key={i}
+            onClick={() => onSelect(v)}
+            className="text-left p-4 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-[#252527] hover:border-[#f9d85a] transition-all group flex flex-col gap-2 relative overflow-hidden"
+          >
+            <div className="flex items-center justify-between">
+              <span className="text-[13px] font-bold text-gray-900 dark:text-white group-hover:text-[#f9d85a] transition-colors">
+                {v.headline}
+              </span>
+              <ChevronRight size={14} className="text-gray-300 group-hover:translate-x-1 transition-transform" />
+            </div>
+            <p className="text-[12px] text-gray-500 dark:text-gray-400 line-clamp-2 italic">
+              {v.rationale}
+            </p>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
 /* ═══════════════════════════════════════════════════════════════════ */
-export default function Compose({ loading, onSubmit }) {
+export default function Compose({ loading, onSubmit, analysis }) {
   const [file, setFile] = useState(null)
   const [preview, setPreview] = useState(null)
   const [isVideo, setIsVideo] = useState(false)
@@ -221,6 +264,39 @@ export default function Compose({ loading, onSubmit }) {
   const [dragOver, setDragOver] = useState(false)
   const fileInputRef = useRef()
   const videoRef = useRef()
+  // YouTube download state
+  const [ytUrl, setYtUrl] = useState('')
+  const [ytLoading, setYtLoading] = useState(false)
+  const [ytProgress, setYtProgress] = useState(0)
+  const [ytMsg, setYtMsg] = useState('')
+  const [ytError, setYtError] = useState('')
+
+  // Restore all form fields when a session is loaded
+  useEffect(() => {
+    const inp = analysis?.inputs
+    if (!inp) return
+    if (inp.headline != null) setHeadline(inp.headline)
+    if (inp.body != null) setBody(inp.body)
+    if (inp.audience != null) setAudience(inp.audience)
+    if (inp.hashtags?.length) setHashtags(inp.hashtags)
+    if (inp.platform) setPlatform(inp.platform)
+    if (inp.placements?.length) setPlacements(inp.placements)
+    if (inp.geo) setGeo(inp.geo)
+    if (inp.industry) setIndustry(inp.industry)
+    if (inp.landingUrl != null) setLandingUrl(inp.landingUrl)
+    if (inp.competitor != null) setCompetitor(inp.competitor)
+    if (inp.cpc != null) setCpc(inp.cpc)
+    if (inp.budget != null) setBudget(inp.budget)
+    if (inp.postType) setPostType(inp.postType)
+    if (inp.followerCount != null) setFollowerCount(inp.followerCount)
+    // Restore thumbnail preview (actual File can't be serialized, so we skip re-analysis)
+    if (inp.thumbnail) {
+      setPreview(inp.thumbnail)
+      setIsVideo(false)
+    } else if (inp.fileName && inp.fileType?.startsWith('video/')) {
+      setIsVideo(true)
+    }
+  }, [analysis?.inputs])
 
   const handleFile = useCallback((f) => {
     setFile(f)
@@ -235,6 +311,78 @@ export default function Compose({ loading, onSubmit }) {
     setIsVideo(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }, [])
+
+  const handleYouTube = useCallback(async (url) => {
+    if (!url.trim()) return
+    setYtLoading(true)
+    setYtProgress(0)
+    setYtMsg('Starting download…')
+    setYtError('')
+
+    try {
+      const resp = await fetch('/api/v1/fetch_youtube', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: url.trim() }),
+      })
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({}))
+        throw new Error(err.detail || 'Download request failed')
+      }
+
+      const reader = resp.body.getReader()
+      const decoder = new TextDecoder()
+      let buffer = ''
+      let fileId = null
+
+      while (true) {
+        const { done, value } = await reader.read()
+        if (done) break
+        buffer += decoder.decode(value, { stream: true })
+        const lines = buffer.split('\n')
+        buffer = lines.pop() // last incomplete line back to buffer
+        for (const line of lines) {
+          if (!line.startsWith('data: ')) continue
+          try {
+            const evt = JSON.parse(line.slice(6))
+            if (evt.type === 'progress') {
+              setYtProgress(evt.pct)
+              setYtMsg(evt.msg || `Downloading… ${evt.pct}%`)
+            } else if (evt.type === 'done') {
+              fileId = evt.file_id
+              setYtProgress(100)
+              setYtMsg(`Processing ${evt.filename} (${evt.size_mb} MB)…`)
+            } else if (evt.type === 'error') {
+              throw new Error(evt.msg)
+            }
+          } catch (parseErr) {
+            if (parseErr.message !== 'Unexpected end of JSON input') throw parseErr
+          }
+        }
+      }
+
+      if (!fileId) throw new Error('Download finished but no file ID received')
+
+      // Retrieve the downloaded video blob
+      setYtMsg('Fetching video…')
+      const fileResp = await fetch(`/api/v1/fetch_youtube/${fileId}`)
+      if (!fileResp.ok) throw new Error('Could not retrieve downloaded file')
+
+      const blob = await fileResp.blob()
+      const filename = fileResp.headers.get('Content-Disposition')?.match(/filename="([^"]+)"/)?.[1] || 'youtube.mp4'
+      const videoFile = new File([blob], filename, { type: 'video/mp4' })
+
+      handleFile(videoFile)
+      setYtUrl('')
+      setYtMsg('')
+    } catch (err) {
+      setYtError(err.message || 'Download failed')
+    } finally {
+      setYtLoading(false)
+      setYtProgress(0)
+    }
+  }, [handleFile])
 
   const addHashtag = useCallback((tag) => {
     const clean = tag.replace(/[#,\s]/g, '').trim()
@@ -335,7 +483,7 @@ export default function Compose({ loading, onSubmit }) {
           </div>
           <div
             className={`relative cursor-pointer flex-1 flex flex-col items-center justify-center transition-colors ${
-              file
+              file || preview
                 ? ''
                 : dragOver
                   ? 'border-2 border-dashed border-[#f9d85a] bg-[rgba(249,216,90,0.06)] mx-3 mb-3 rounded-[1rem]'
@@ -346,24 +494,24 @@ export default function Compose({ loading, onSubmit }) {
             onDragLeave={() => setDragOver(false)}
             onDrop={e => { e.preventDefault(); setDragOver(false); if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]) }}
           >
-            {!file && (
+            {!file && !preview && (
               <div className="flex flex-col items-center gap-2.5">
                 <ImagePlus size={40} className="text-gray-300" strokeWidth={1.2} />
                 <span className="text-[14px] font-medium text-gray-500">Drop your creative here</span>
                 <span className="text-[11px] text-gray-400 font-mono">PNG, JPG, MP4, MOV</span>
               </div>
             )}
-            {file && !isVideo && (
+            {preview && !isVideo && (
               <img className="absolute inset-0 w-full h-full object-cover" src={preview} alt="" />
             )}
-            {file && isVideo && (
+            {preview && isVideo && (
               <video className="absolute inset-0 w-full h-full object-cover" src={preview} ref={videoRef} muted loop autoPlay />
             )}
-            {file && (
+            {preview && (
               <>
                 <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/70 to-transparent pointer-events-none" />
                 <span className="absolute bottom-3 left-4 text-white text-[12px] font-medium truncate max-w-[70%] pointer-events-none">
-                  {file.name}
+                  {file?.name || 'Previous creative (re-upload to re-analyse)'}
                 </span>
                 <button
                   className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
@@ -381,6 +529,62 @@ export default function Compose({ loading, onSubmit }) {
             hidden
             onChange={e => { if (e.target.files.length) handleFile(e.target.files[0]) }}
           />
+
+          {/* YouTube URL input — hidden once a file is loaded */}
+          {!file && !preview && (
+            <div className="mx-3 mb-3 mt-1">
+              {/* Divider */}
+              <div className="flex items-center gap-2 mb-2">
+                <div className="flex-1 h-px bg-gray-200/60 dark:bg-white/[0.06]" />
+                <span className="text-[10px] font-medium text-gray-400 dark:text-gray-500 uppercase tracking-widest">or paste YouTube URL</span>
+                <div className="flex-1 h-px bg-gray-200/60 dark:bg-white/[0.06]" />
+              </div>
+
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Youtube size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-red-500 pointer-events-none" />
+                  <input
+                    type="url"
+                    placeholder="https://youtube.com/watch?v=…"
+                    value={ytUrl}
+                    onChange={e => { setYtUrl(e.target.value); setYtError('') }}
+                    onKeyDown={e => e.key === 'Enter' && handleYouTube(ytUrl)}
+                    disabled={ytLoading}
+                    className="w-full pl-8 pr-3 py-2 text-[12px] rounded-[0.75rem] bg-gray-50 dark:bg-white/[0.04] border border-gray-200/80 dark:border-white/[0.08] text-gray-800 dark:text-gray-200 placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#f9d85a]/60 disabled:opacity-50 transition"
+                  />
+                </div>
+                <button
+                  onClick={() => handleYouTube(ytUrl)}
+                  disabled={ytLoading || !ytUrl.trim()}
+                  className="px-3 py-2 rounded-[0.75rem] bg-[#f9d85a]/10 hover:bg-[#f9d85a]/20 text-[#f9d85a] disabled:opacity-40 transition text-[11px] font-bold uppercase tracking-wider flex items-center gap-1.5 cursor-pointer"
+                >
+                  {ytLoading ? <Loader2 size={12} className="animate-spin" /> : <Youtube size={12} />}
+                  {ytLoading ? 'Downloading' : 'Fetch'}
+                </button>
+              </div>
+
+              {/* Progress bar */}
+              {ytLoading && (
+                <div className="mt-2">
+                  <div className="flex justify-between text-[10px] text-gray-400 mb-1">
+                    <span className="truncate">{ytMsg}</span>
+                    <span className="ml-2 shrink-0">{ytProgress}%</span>
+                  </div>
+                  <div className="h-1.5 rounded-full bg-gray-100 dark:bg-white/[0.06] overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-[#f9d85a] transition-all duration-300"
+                      style={{ width: `${ytProgress}%` }}
+                    />
+                  </div>
+                </div>
+              )}
+
+              {/* Error */}
+              {ytError && (
+                <p className="mt-2 text-[11px] text-red-500">{ytError}</p>
+              )}
+            </div>
+          )}
         </motion.div>
 
         {/* ── AD COPY ─ right top ──────────────────────────────── */}
@@ -388,7 +592,23 @@ export default function Compose({ loading, onSubmit }) {
           variants={cardVariants}
           className={`${CARD} p-5 lg:col-span-7`}
         >
-          <Label>Ad Copy</Label>
+          <div className="flex items-center justify-between mb-3">
+            <Label>Ad Copy</Label>
+            {analysis?.store?.diagnostic && (
+              <button
+                onClick={() => analysis.generateVariants()}
+                disabled={analysis.variantsLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#f9d85a]/10 text-[#f9d85a] hover:bg-[#f9d85a]/20 disabled:opacity-50 transition-all text-[11px] font-bold uppercase tracking-wider cursor-pointer"
+              >
+                {analysis.variantsLoading ? (
+                  <RefreshCcw size={12} className="animate-spin" />
+                ) : (
+                  <Sparkles size={12} />
+                )}
+                Refine with AI
+              </button>
+            )}
+          </div>
           <div className="space-y-4">
             <div>
               <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1.5">Headline</span>
@@ -411,6 +631,16 @@ export default function Compose({ loading, onSubmit }) {
                 onChange={e => setBody(e.target.value)}
               />
             </div>
+            
+            <VariantSelector 
+              variants={analysis?.store?.variants} 
+              loading={analysis?.variantsLoading}
+              onSelect={(v) => {
+                setHeadline(v.headline)
+                setBody(v.body_text)
+              }}
+            />
+
             <div>
               <span className="text-[11px] font-medium text-gray-500 dark:text-gray-400 block mb-1.5">Hashtags</span>
               <div className="flex flex-wrap items-center gap-1.5 bg-[#f4f5f7] dark:bg-white/5 rounded-xl px-3 py-2.5 border border-gray-200 dark:border-white/10 focus-within:border-[#f9d85a] focus-within:ring-2 focus-within:ring-[#f9d85a]/10 transition-colors">

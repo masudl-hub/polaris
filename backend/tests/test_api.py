@@ -42,12 +42,12 @@ def test_client():
     main.word2vec_model = gensim_api.load("glove-twitter-50")
 
     # Mock Gemini client
-    from helpers import _make_mock_gemini_response, MOCK_VISION_RESPONSE, MOCK_DIAGNOSTIC_RESPONSE
+    from helpers import _make_mock_gemini_response, MOCK_MEDIA_DECOMP_RESPONSE, MOCK_DIAGNOSTIC_RESPONSE
 
     mock_gemini = MagicMock()
     def gemini_side_effect(model, contents, **kwargs):
         if isinstance(contents, list) and len(contents) >= 2:
-            return _make_mock_gemini_response(MOCK_VISION_RESPONSE)
+            return _make_mock_gemini_response(MOCK_MEDIA_DECOMP_RESPONSE)
         return _make_mock_gemini_response(MOCK_DIAGNOSTIC_RESPONSE)
     mock_gemini.models.generate_content.side_effect = gemini_side_effect
     main.gemini_client = mock_gemini

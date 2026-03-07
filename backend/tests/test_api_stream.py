@@ -7,7 +7,7 @@ import pytest
 import os
 import sys
 import json
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock, AsyncMock
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
@@ -35,12 +35,12 @@ def test_client():
     )
     main.word2vec_model = gensim_api.load("glove-twitter-50")
 
-    from helpers import _make_mock_gemini_response, MOCK_VISION_RESPONSE, MOCK_DIAGNOSTIC_RESPONSE
+    from helpers import _make_mock_gemini_response, MOCK_MEDIA_DECOMP_RESPONSE, MOCK_DIAGNOSTIC_RESPONSE
 
     mock_gemini = MagicMock()
     def gemini_side_effect(model, contents, **kwargs):
         if isinstance(contents, list) and len(contents) >= 2:
-            return _make_mock_gemini_response(MOCK_VISION_RESPONSE)
+            return _make_mock_gemini_response(MOCK_MEDIA_DECOMP_RESPONSE)
         return _make_mock_gemini_response(MOCK_DIAGNOSTIC_RESPONSE)
     mock_gemini.models.generate_content.side_effect = gemini_side_effect
     main.gemini_client = mock_gemini
@@ -361,3 +361,193 @@ class TestFrontendCompatibility:
         assert "quality_score" in sem
         assert "effective_cpc" in sem
         assert "daily_clicks" in sem
+
+
+# ──────────────────────────────────────────────────────────────────
+# Phase 2: Audio Intelligence streaming events
+# ──────────────────────────────────────────────────────────────────
+
+class TestAudioIntelligenceStreaming:
+    def test_no_audio_intelligence_event_for_text_only(self, test_client, mock_trends):
+        """audio_intelligence_data should NOT appear when no media is uploaded."""
+        resp = test_client.post(
+            "/api/v1/evaluate_ad_stream",
+            data={
+                "headline": "Text-only audio test",
+                "body": "No media file here",
+                "platform": "Meta",
+            },
+        )
+        events = parse_sse_events(resp.text)
+        ai_events = [e for e in events if e.get("type") == "audio_intelligence_data"]
+        assert len(ai_events) == 0
+
+    def test_audio_intelligence_event_emitted_for_video(self, test_client, mock_trends):
+        """audio_intelligence_data should be emitted for video uploads when song is identified."""
+        import main
+        from models import SongIdentification
+
+        mock_song = SongIdentification(
+            title="Blinding Lights",
+            artist="The Weeknd",
+            trend_momentum=0.75,
+        )
+
+        video_path = os.path.join(FIXTURES_DIR, "sample_video.mp4")
+        with open(video_path, "rb") as f:
+            with patch.object(main, "run_audio_intelligence", new_callable=AsyncMock, return_value=mock_song):
+                resp = test_client.post(
+                    "/api/v1/evaluate_ad_stream",
+                    data={
+                        "headline": "Video audio intel test",
+                        "body": "Body",
+                        "platform": "TikTok",
+                    },
+                    files={"media_file": ("test.mp4", f, "video/mp4")},
+                )
+
+        events = parse_sse_events(resp.text)
+        ai_events = [e for e in events if e.get("type") == "audio_intelligence_data"]
+        assert len(ai_events) == 1
+        song_data = ai_events[0]["data"]
+        assert song_data["title"] == "Blinding Lights"
+        assert song_data["artist"] == "The Weeknd"
+        assert song_data["trend_momentum"] == pytest.approx(0.75)
+
+
+# ──────────────────────────────────────────────────────────────────
+# Phase 3: Entity Atomization streaming events
+# ──────────────────────────────────────────────────────────────────
+
+class TestEntityAtomizationStreaming:
+    def test_entity_atomization_event_in_stream(self, test_client, mock_trends):
+        """entity_atomization_data should be emitted when entities are detected."""
+        import main
+        from models import EntityNode, EntityAtomization
+
+        mock_ea = EntityAtomization(
+            nodes=[
+                EntityNode(name="Nike", momentum=0.7, related_queries_top=["air max"], related_queries_rising=[]),
+                EntityNode(name="Adidas", momentum=0.6, related_queries_top=["yeezy"], related_queries_rising=[]),
+            ],
+            aggregate_momentum=0.65,
+        )
+
+        with patch.object(main, "run_entity_atomization", return_value=mock_ea):
+            resp = test_client.post(
+                "/api/v1/evaluate_ad_stream",
+                data={
+                    "headline": "Nike vs Adidas — Summer 2025 Brand Battle",
+                    "body": "Nike and Adidas are competing for market share in Paris this summer.",
+                    "platform": "Meta",
+                },
+            )
+
+        events = parse_sse_events(resp.text)
+        ea_events = [e for e in events if e.get("type") == "entity_atomization_data"]
+        assert len(ea_events) == 1
+
+        ea_data = ea_events[0]["data"]
+        assert "nodes" in ea_data
+        assert "aggregate_momentum" in ea_data
+        assert len(ea_data["nodes"]) == 2
+        node_names = {n["name"] for n in ea_data["nodes"]}
+        assert "Nike" in node_names
+        assert "Adidas" in node_names
+
+    def test_entity_atomization_absent_for_no_entities(self, test_client, mock_trends):
+        """entity_atomization_data should NOT be emitted when NER extracts no entities."""
+        import main
+
+        # Patch NLP so that doc.ents is empty → entities list will be []
+        mock_doc = MagicMock()
+        mock_doc.ents = []
+        mock_nlp = MagicMock(return_value=mock_doc)
+
+        original_nlp = main.nlp_model
+        main.nlp_model = mock_nlp
+        try:
+            resp = test_client.post(
+                "/api/v1/evaluate_ad_stream",
+                data={
+                    "headline": "buy now",
+                    "body": "limited time offer",
+                    "platform": "Meta",
+                },
+            )
+        finally:
+            main.nlp_model = original_nlp
+
+        events = parse_sse_events(resp.text)
+        ea_events = [e for e in events if e.get("type") == "entity_atomization_data"]
+        assert len(ea_events) == 0
+
+
+# ──────────────────────────────────────────────────────────────────
+# Phase 4: Cultural Context streaming events
+# ──────────────────────────────────────────────────────────────────
+
+class TestCulturalContextStreaming:
+    def test_cultural_context_event_when_key_set(self, test_client, mock_trends):
+        """cultural_context_data event should be emitted when run_cultural_context returns data."""
+        import main
+        from models import EntityCulturalContext, CulturalContext
+
+        mock_cc = CulturalContext(
+            entity_contexts=[
+                EntityCulturalContext(
+                    entity_name="Nike",
+                    cultural_sentiment="positive",
+                    trending_direction="ascending",
+                    narrative_summary="Nike is trending positively in athletic wear.",
+                    advertising_risk="low",
+                    cultural_moments=["Paris Olympics"],
+                    adjacent_topics=["running", "fitness"],
+                )
+            ],
+            overall_advertising_risk="low",
+        )
+
+        with patch.object(main, "run_cultural_context", new_callable=AsyncMock, return_value=mock_cc):
+            resp = test_client.post(
+                "/api/v1/evaluate_ad_stream",
+                data={
+                    "headline": "Nike Just Do It Summer 2025",
+                    "body": "Nike is pushing new athletic collections this summer.",
+                    "platform": "Meta",
+                },
+            )
+
+        events = parse_sse_events(resp.text)
+        cc_events = [e for e in events if e.get("type") == "cultural_context_data"]
+        assert len(cc_events) == 1
+
+        cc_data = cc_events[0]["data"]
+        assert "entity_contexts" in cc_data
+        assert "overall_advertising_risk" in cc_data
+        assert cc_data["overall_advertising_risk"] == "low"
+        assert len(cc_data["entity_contexts"]) == 1
+        assert cc_data["entity_contexts"][0]["entity_name"] == "Nike"
+
+    def test_cultural_context_absent_when_no_key(self, test_client, mock_trends):
+        """cultural_context_data should NOT be emitted when run_cultural_context returns None."""
+        import main
+
+        with patch.object(main, "run_cultural_context", new_callable=AsyncMock, return_value=None):
+            resp = test_client.post(
+                "/api/v1/evaluate_ad_stream",
+                data={
+                    "headline": "Nike Summer Sale",
+                    "body": "Big discounts on Nike shoes this summer.",
+                    "platform": "Meta",
+                },
+            )
+
+        events = parse_sse_events(resp.text)
+        cc_events = [e for e in events if e.get("type") == "cultural_context_data"]
+        assert len(cc_events) == 0
+
+        # A step event for Cultural Context should still appear (with warning status)
+        step_events = [e for e in events if e.get("type") == "step" and e.get("name") == "Cultural Context"]
+        assert len(step_events) >= 1
+        assert step_events[0].get("status") == "warning"

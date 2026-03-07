@@ -4,7 +4,12 @@ const INITIAL_STORE = {
   steps: [],
   text: null,
   vision: null,
+  mediaDecomposition: null,
+  audioIntelligence: null,
+  entityAtomization: null,
+  culturalContext: null,
   sentiment: null,
+  compositeSentiment: null,
   trends: null,
   sem: null,
   landing: null,
@@ -14,17 +19,21 @@ const INITIAL_STORE = {
   audience: null,
   linkedin: null,
   competitor: null,
+  resonanceGraph: null,
   diagnostic: '',
+  variants: null,
 }
 
 export function useAnalysis() {
   const [store, setStore] = useState(INITIAL_STORE)
+  const [inputs, setInputs] = useState(null)
   const [loading, setLoading] = useState(false)
   const [stepCount, setStepCount] = useState(0)
   const [totalSteps, setTotalSteps] = useState(0)
   const [currentStep, setCurrentStep] = useState('')
   const [progress, setProgress] = useState(0)
   const [done, setDone] = useState(false)
+  const [variantsLoading, setVariantsLoading] = useState(false)
   const storeRef = useRef(INITIAL_STORE)
 
   const resetStore = useCallback(() => {
@@ -36,11 +45,13 @@ export function useAnalysis() {
     setProgress(0)
     setCurrentStep('')
     setDone(false)
+    setVariantsLoading(false)
   }, [])
 
-  const loadStore = useCallback((s) => {
+  const loadStore = useCallback((s, inp = null) => {
     storeRef.current = s
     setStore(s)
+    setInputs(inp)
     setDone(true)
   }, [])
 
@@ -79,6 +90,9 @@ export function useAnalysis() {
             // Immediate feedback — pipeline is running, show the UI right away
             setTotalSteps(evt.total_steps || 13)
             setCurrentStep(evt.has_media ? 'Uploading media…' : 'Initializing pipeline…')
+          } else if (evt.type === 'progress_msg') {
+            // A granular progress update from within a long step
+            setCurrentStep(evt.msg || '')
           } else if (evt.type === 'step_starting') {
             // A step is about to run — show its name before the slow call
             setCurrentStep(evt.name || '')
@@ -105,10 +119,20 @@ export function useAnalysis() {
             })
           } else if (evt.type === 'vision_data') {
             setStore(prev => { const n = { ...prev, vision: evt.data }; storeRef.current = n; return n })
+          } else if (evt.type === 'media_decomposition') {
+            setStore(prev => { const n = { ...prev, mediaDecomposition: evt.data }; storeRef.current = n; return n })
+          } else if (evt.type === 'audio_intelligence_data') {
+            setStore(prev => { const n = { ...prev, audioIntelligence: evt.data }; storeRef.current = n; return n })
+          } else if (evt.type === 'entity_atomization_data') {
+            setStore(prev => { const n = { ...prev, entityAtomization: evt.data }; storeRef.current = n; return n })
+          } else if (evt.type === 'cultural_context_data') {
+            setStore(prev => { const n = { ...prev, culturalContext: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'trend_data') {
             setStore(prev => { const n = { ...prev, trends: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'sem_metrics') {
             setStore(prev => { const n = { ...prev, sem: evt.data }; storeRef.current = n; return n })
+          } else if (evt.type === 'composite_sentiment') {
+            setStore(prev => { const n = { ...prev, compositeSentiment: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'benchmark_data') {
             setStore(prev => { const n = { ...prev, benchmark: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'landing_page_data') {
@@ -123,6 +147,8 @@ export function useAnalysis() {
             setStore(prev => { const n = { ...prev, linkedin: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'competitor_data') {
             setStore(prev => { const n = { ...prev, competitor: evt.data }; storeRef.current = n; return n })
+          } else if (evt.type === 'resonance_graph') {
+            setStore(prev => { const n = { ...prev, resonanceGraph: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'diagnostic') {
             setStore(prev => { const n = { ...prev, diagnostic: evt.data }; storeRef.current = n; return n })
           } else if (evt.type === 'done') {
@@ -134,12 +160,70 @@ export function useAnalysis() {
           }
         }
       }
-    } catch (err) {
-      onError?.(err.message || 'Something went wrong')
     } finally {
       setLoading(false)
     }
   }, [resetStore])
 
-  return { store, loading, stepCount, totalSteps, currentStep, progress, done, run, resetStore, loadStore, storeRef }
+  const generateVariants = useCallback(async (onSuccess, onError) => {
+    setVariantsLoading(true)
+    try {
+      const payload = {
+        status: "success",
+        executive_diagnostic: storeRef.current.diagnostic,
+        pipeline_trace: storeRef.current.steps || [],
+        quantitative_metrics: {
+          text_data: storeRef.current.text,
+          vision_data: storeRef.current.vision,
+          media_decomposition: storeRef.current.mediaDecomposition,
+          trend_data: storeRef.current.trends,
+          entity_atomization: storeRef.current.entityAtomization,
+          cultural_context: storeRef.current.culturalContext,
+          resonance_graph: storeRef.current.resonanceGraph,
+          sem_metrics: storeRef.current.sem,
+          industry_benchmark: storeRef.current.benchmark,
+          landing_page: storeRef.current.landing,
+          reddit_sentiment: storeRef.current.reddit,
+          creative_alignment: storeRef.current.alignment,
+          audience_analysis: storeRef.current.audience,
+          linkedin_analysis: storeRef.current.linkedin,
+          competitor_intel: storeRef.current.competitor,
+        }
+      }
+
+      const resp = await fetch('/api/v1/generate_variants', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      })
+
+      if (!resp.ok) throw new Error('Variant generation failed')
+      const data = await resp.json()
+      
+      setStore(prev => ({ ...prev, variants: data.variants }))
+      storeRef.current = { ...storeRef.current, variants: data.variants }
+      onSuccess?.(data.variants)
+    } catch (err) {
+      onError?.(err.message)
+    } finally {
+      setVariantsLoading(false)
+    }
+  }, [])
+
+  return { 
+    store,
+    inputs,
+    loading, 
+    stepCount, 
+    totalSteps, 
+    currentStep, 
+    progress, 
+    done, 
+    run, 
+    resetStore, 
+    loadStore, 
+    storeRef,
+    variantsLoading,
+    generateVariants
+  }
 }

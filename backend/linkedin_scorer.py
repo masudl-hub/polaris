@@ -408,11 +408,18 @@ def _get_model():
 
 # ─── Quality Score ─────────────────────────────────────────────────
 
-def compute_quality_score(features: dict) -> tuple:
+def compute_quality_score(features: dict, pipeline_enrichment: dict = None) -> tuple:
     """
     Compute a 0-100 quality score with breakdown and suggestions.
     Based on published LinkedIn engagement research.
+
+    When pipeline_enrichment is provided, additional signals from the Polaris
+    pipeline (RoBERTa sentiment, trend momentum, cultural context, audience
+    alignment, visual quality) are woven into the score as a dedicated factor.
     """
+    if pipeline_enrichment is None:
+        pipeline_enrichment = {}
+
     scores = {}
     suggestions = []
     max_points = {}
@@ -488,15 +495,28 @@ def compute_quality_score(features: dict) -> tuple:
         scores["cta"] = 2
         suggestions.append("No call-to-action detected. End with a question or prompt ('What do you think?', 'Share if you agree') to drive comments.")
 
-    # Sentiment (5 points)
+    # Sentiment (5 points) — use pipeline RoBERTa composite when available
     max_points["sentiment"] = 5
-    s = features["sentiment"]
-    if 0.1 <= s <= 0.5:
-        scores["sentiment"] = 5
-    elif 0 <= s <= 0.7:
-        scores["sentiment"] = 3
+    pipeline_sentiment = pipeline_enrichment.get("composite_sentiment")
+    if pipeline_sentiment is not None:
+        # RoBERTa composite sentiment (0-1 scale): ideal is mildly positive 0.55-0.80
+        if 0.55 <= pipeline_sentiment <= 0.80:
+            scores["sentiment"] = 5
+        elif 0.40 <= pipeline_sentiment <= 0.90:
+            scores["sentiment"] = 4
+        elif 0.25 <= pipeline_sentiment:
+            scores["sentiment"] = 3
+        else:
+            scores["sentiment"] = 1
     else:
-        scores["sentiment"] = 1
+        # Fallback: regex heuristic
+        s = features["sentiment"]
+        if 0.1 <= s <= 0.5:
+            scores["sentiment"] = 5
+        elif 0 <= s <= 0.7:
+            scores["sentiment"] = 3
+        else:
+            scores["sentiment"] = 1
 
     # Formatting/structure (5 points)
     max_points["formatting"] = 5
@@ -516,6 +536,87 @@ def compute_quality_score(features: dict) -> tuple:
     if features["has_url"]:
         suggestions.append("External links reduce organic reach by ~30% on LinkedIn. Consider putting the link in the first comment instead.")
 
+    # ── Pipeline Enrichment (10 points) ──────────────────────────────
+    # Signals from the wider Polaris pipeline that influence LinkedIn performance:
+    #   trend_momentum (0-1): Is the topic trending? Trending topics get more impressions.
+    #   cultural_risk  (0-1): Is any entity controversial? High risk = engagement ceiling.
+    #   audience_alignment (0-1): Does the copy match the target audience?
+    #   visual_quality (0-1): Platform fit of any attached media.
+    #   resonance_score (0-1): How well do all entities cohere as a signal graph?
+    max_points["pipeline_signals"] = 10
+    pipeline_pts = 0
+    pipeline_signal_count = 0
+
+    trend_momentum = pipeline_enrichment.get("trend_momentum")
+    if trend_momentum is not None:
+        pipeline_signal_count += 1
+        if trend_momentum >= 0.65:
+            pipeline_pts += 3
+        elif trend_momentum >= 0.45:
+            pipeline_pts += 2
+        elif trend_momentum >= 0.30:
+            pipeline_pts += 1
+        else:
+            suggestions.append(
+                f"Topic momentum is low ({trend_momentum:.0%}). Posts about trending topics get 2-3x more organic impressions on LinkedIn."
+            )
+
+    cultural_risk = pipeline_enrichment.get("cultural_risk")
+    if cultural_risk is not None:
+        pipeline_signal_count += 1
+        safety = 1.0 - cultural_risk
+        if safety >= 0.80:
+            pipeline_pts += 2
+        elif safety >= 0.50:
+            pipeline_pts += 1
+        else:
+            suggestions.append(
+                "Your post mentions entities with elevated cultural risk. LinkedIn's algorithm deprioritizes controversial content."
+            )
+
+    audience_alignment = pipeline_enrichment.get("audience_alignment")
+    if audience_alignment is not None:
+        pipeline_signal_count += 1
+        if audience_alignment >= 0.70:
+            pipeline_pts += 2
+        elif audience_alignment >= 0.45:
+            pipeline_pts += 1
+        else:
+            suggestions.append(
+                f"Audience alignment is {audience_alignment:.0%}. Adjust your language and framing to better match your target audience."
+            )
+
+    visual_quality = pipeline_enrichment.get("visual_quality")
+    if visual_quality is not None:
+        pipeline_signal_count += 1
+        if visual_quality >= 0.70:
+            pipeline_pts += 2
+        elif visual_quality >= 0.45:
+            pipeline_pts += 1
+        else:
+            suggestions.append(
+                "Media quality scored low for this platform. Use high-resolution, professional images or well-edited video."
+            )
+
+    resonance_score = pipeline_enrichment.get("resonance_score")
+    if resonance_score is not None:
+        pipeline_signal_count += 1
+        if resonance_score >= 0.60:
+            pipeline_pts += 1
+
+    if pipeline_signal_count == 0:
+        # No pipeline data available — remove the category entirely
+        del max_points["pipeline_signals"]
+    else:
+        # Scale to 10 points proportionally based on how many signals are available
+        max_possible = pipeline_signal_count * 2  # max 2 pts per signal (except trend=3)
+        if trend_momentum is not None:
+            max_possible += 1  # trend can give 3 pts
+        if resonance_score is not None and max_possible > 0:
+            pass  # resonance gives max 1 pt
+        scores["pipeline_signals"] = min(10, round(pipeline_pts / max(1, max_possible) * 10))
+
+    # Compute final score
     raw_total = sum(scores.values())
     raw_max = sum(max_points.values())
     total = round(raw_total / raw_max * 100) if raw_max > 0 else 0
@@ -532,9 +633,21 @@ def predict_linkedin_performance(
     follower_count: int = 5000,
     industry: str = "",
     hashtags: list = None,
+    # ── Pipeline enrichment signals (optional) ──
+    pipeline_enrichment: dict = None,
 ) -> dict:
     """
     Full LinkedIn post performance prediction.
+
+    When pipeline_enrichment is provided (from the Polaris pipeline), richer
+    signals replace internal heuristics and modulate predicted engagement:
+      - composite_sentiment (float 0-1): RoBERTa composite replaces regex sentiment
+      - trend_momentum (float 0-1): Topic momentum boosts/penalizes impressions
+      - cultural_risk (float 0-1): Cultural risk caps engagement ceiling
+      - audience_alignment (float 0-1): Audience fit amplifies engagement
+      - visual_quality (float 0-1): Platform fit score of attached media
+      - resonance_score (float 0-1): Entity graph resonance composite
+      - trending_direction (str): 'ascending'|'stable'|'descending'|'viral'
 
     Returns dict with:
     - quality_score (0-100)
@@ -549,13 +662,16 @@ def predict_linkedin_performance(
     - timing_heatmap: 7x18 grid of predicted engagement by day × hour
     - best_times: top 5 (day, hour, engagement) tuples
     """
+    if pipeline_enrichment is None:
+        pipeline_enrichment = {}
+
     # Use best default time (Wed 9am) for the main prediction
     features = extract_features(
         text, post_type, follower_count, 2, 9, industry, hashtags
     )
 
-    # Quality score
-    quality_score, breakdown, suggestions = compute_quality_score(features)
+    # Quality score (now pipeline-aware)
+    quality_score, breakdown, suggestions = compute_quality_score(features, pipeline_enrichment)
 
     # Model prediction at optimal time
     model = _get_model()
@@ -567,6 +683,48 @@ def predict_linkedin_performance(
     reactions = max(0, int(preds[1]))
     comments = max(0, int(preds[2]))
     shares = max(0, int(preds[3]))
+
+    # ── Pipeline-driven engagement modulation ──────────────────────
+    # These multipliers adjust the ML model's predictions based on real-world
+    # signals that the model cannot observe (it was trained on synthetic data
+    # without access to trend/cultural/audience context).
+
+    engagement_mult = 1.0
+
+    # Trend momentum: trending topics get organically amplified by the algorithm
+    trend_m = pipeline_enrichment.get("trend_momentum")
+    if trend_m is not None:
+        # 0.5 = neutral, >0.5 = boost, <0.5 = penalty
+        # Range: 0.80x to 1.40x
+        engagement_mult *= 0.80 + (trend_m * 0.60)
+
+    # Cultural risk: controversial topics get suppressed by LinkedIn's algorithm
+    c_risk = pipeline_enrichment.get("cultural_risk")
+    if c_risk is not None:
+        # risk 0 = no penalty, risk 1 = -40% engagement
+        engagement_mult *= max(0.60, 1.0 - c_risk * 0.40)
+
+    # Audience alignment: better targeting = better engagement
+    aud_align = pipeline_enrichment.get("audience_alignment")
+    if aud_align is not None:
+        # Range: 0.85x to 1.20x
+        engagement_mult *= 0.85 + (aud_align * 0.35)
+
+    # Trending direction: viral topics get a burst boost
+    trend_dir = pipeline_enrichment.get("trending_direction")
+    if trend_dir == "viral":
+        engagement_mult *= 1.25
+    elif trend_dir == "ascending":
+        engagement_mult *= 1.10
+    elif trend_dir == "descending":
+        engagement_mult *= 0.90
+
+    # Apply engagement multiplier to predictions
+    if engagement_mult != 1.0:
+        impressions = max(10, int(impressions * engagement_mult))
+        reactions = max(0, int(reactions * engagement_mult))
+        comments = max(0, int(comments * engagement_mult))
+        shares = max(0, int(shares * engagement_mult))
 
     total_engagement = reactions + comments + shares
     engagement_rate = total_engagement / max(1, impressions)

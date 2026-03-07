@@ -23,6 +23,7 @@ const BREAKDOWN_LABELS = {
   sentiment: 'Sentiment',
   formatting: 'Formatting',
   timing: 'Timing',
+  pipeline_signals: 'Pipeline Intel',
 }
 
 function HeatmapCell({ value, max }) {
@@ -64,9 +65,9 @@ export default function LinkedInSection({ linkedin }) {
         {/* Quality Score */}
         <motion.div variants={fadeUp}>
           <CardInsight
-            meaning="A composite content quality score based on 8 research-backed factors for LinkedIn engagement."
-            significance="Posts scoring above 70 typically outperform. Below 45 suggests significant room for improvement."
-            calculation="Weighted sum of: post length (15%), hook quality (20%), readability (10%), format (15%), hashtags (10%), CTA (10%), sentiment (5%), formatting (5%). Normalized to 0-100."
+            meaning="A composite content quality score based on 8 research-backed factors plus pipeline intelligence — trend momentum, cultural safety, audience alignment, and visual quality when available."
+            significance="Posts scoring above 70 typically outperform. Below 45 suggests significant room for improvement. Pipeline signals add up to 10 additional points based on real-time market context."
+            calculation="Weighted sum of: post length (15pts), hook quality (20pts), readability (10pts), format (15pts), hashtags (10pts), CTA (10pts), sentiment (5pts), formatting (5pts), plus pipeline signals (10pts from trend/cultural/audience/visual). Normalized to 0-100."
           >
             <Card padding="spacious" animate={false} className="h-full flex flex-col justify-between">
               <SectionHeader title="Content Quality" variant="mono" />

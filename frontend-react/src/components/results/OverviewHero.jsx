@@ -27,9 +27,9 @@ export default function OverviewHero({ store }) {
       {/* Quality Score - dark */}
       <motion.div variants={fadeUp}>
         <CardInsight
-          meaning="A composite score from 0-10 that represents the overall predicted effectiveness of your ad creative across copy, visuals, targeting, and market fit."
-          significance="Ads scoring above 7 typically see 2-3x better CTR than those below 5. This is your single most important number."
-          calculation="QS = w1*sentiment + w2*trend_alignment + w3*platform_fit + w4*language_quality + w5*visual_score, where weights are platform-specific. Each sub-score is normalized 0-1, then the weighted sum is scaled to 0-10."
+          meaning="A holistic score from 0-10 that fuses ALL available pipeline signals — sentiment, trend momentum, visual fit, cultural safety, audience alignment, creative-trend alignment, content coherence, and audio relevance."
+          significance="Ads scoring above 7 typically see 2-3x better CTR than those below 5. Unlike a simple Google Ads QS, this incorporates cultural context, entity-level trends, and audience fit."
+          calculation="QS = weighted fusion of up to 8 signals: sentiment (20%), trend momentum (15%), visual/platform fit (15%), cultural safety (15%), creative-trend alignment (10%), audience alignment (10%), content coherence (10%), audio relevance (5%). Weights auto-renormalize when signals are absent."
         >
           <Card variant="dark" padding="none" animate={false} className="p-8 min-h-[220px] flex flex-col justify-between">
             <span className="text-[11px] font-medium tracking-[0.12em] uppercase text-white/40">

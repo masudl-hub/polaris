@@ -59,7 +59,7 @@ export default function App() {
   const handleSessionClick = useCallback(async (id) => {
     const record = await sessions.load(id)
     if (record?.store) {
-      analysis.loadStore(record.store)
+      analysis.loadStore(record.store, record.inputs || null)
       setView('results')
       sessions.refresh()
     }
@@ -86,7 +86,11 @@ export default function App() {
               key="compose"
               {...viewTransition}
             >
-              <Compose loading={analysis.loading} onSubmit={handleSubmit} />
+              <Compose 
+                loading={analysis.loading} 
+                onSubmit={handleSubmit} 
+                analysis={analysis} 
+              />
             </motion.div>
           )}
           {view === 'analyze' && (
@@ -109,7 +113,12 @@ export default function App() {
               key="results"
               {...viewTransition}
             >
-              <Results store={analysis.store} />
+              <Results 
+                store={analysis.store} 
+                sessions={sessions.sessions}
+                currentSessionId={sessions.currentId}
+                onBackToCompose={() => setView('compose')}
+              />
             </motion.div>
           )}
         </AnimatePresence>

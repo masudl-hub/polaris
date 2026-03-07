@@ -135,6 +135,49 @@ def patched_pytrends(mock_pytrends):
         yield mock_pytrends
 
 
+@pytest.fixture
+def mock_perplexity_response():
+    """Returns a factory for a valid Perplexity Sonar API response dict."""
+    import json as _json
+
+    def make_response(entity_name: str = "Nike"):
+        return {
+            "id": "chatcmpl-test",
+            "model": "sonar",
+            "choices": [{
+                "index": 0,
+                "message": {
+                    "role": "assistant",
+                    "content": _json.dumps({
+                        "cultural_sentiment": "positive",
+                        "trending_direction": "ascending",
+                        "narrative_summary": (
+                            f"{entity_name} is currently associated with sports performance "
+                            "and cultural credibility. The brand is gaining momentum through "
+                            "athlete partnerships and sustainability initiatives."
+                        ),
+                        "advertising_risk": "low",
+                        "advertising_risk_reason": "Strong positive brand perception, no active controversies.",
+                        "cultural_moments": [
+                            "Paris Olympics partnership",
+                            "sustainable materials campaign",
+                        ],
+                        "adjacent_topics": [
+                            "athletic performance",
+                            "streetwear culture",
+                            "Gen-Z fashion",
+                            "sustainability",
+                        ],
+                    })
+                },
+                "finish_reason": "stop",
+            }],
+            "usage": {"prompt_tokens": 120, "completion_tokens": 200, "total_tokens": 320},
+        }
+
+    return make_response
+
+
 # ──────────────────────────────────────────────────────────────────
 # Sample data for model validation tests
 # ──────────────────────────────────────────────────────────────────
@@ -190,3 +233,80 @@ def sample_sem_metrics_data():
         "effective_cpc": 0.95,
         "daily_clicks": 105,
     }
+
+
+@pytest.fixture
+def sample_resonance_graph_data():
+    """Valid data dict for constructing a ResonanceGraph model."""
+    return {
+        "nodes": [
+            {
+                "entity": "Nike",
+                "node_type": "brand",
+                "momentum_score": 0.75,
+                "cultural_risk": 0.1,
+                "sentiment_signal": 0.70,
+                "platform_affinity": 0.80,
+                "weight": 0.378,
+            }
+        ],
+        "edges": [],
+        "composite_resonance_score": 0.378,
+        "dominant_signals": ["Nike"],
+        "resonance_tier": "moderate",
+        "node_count": 1,
+        "edge_count": 0,
+    }
+
+
+@pytest.fixture
+def mock_word2vec_model():
+    """Minimal GloVe-like mock with 50d vectors for test entities."""
+    import numpy as np
+
+    class MockKeyedVectors:
+        _vocab = {"nike", "running", "performance", "sport"}
+
+        def __contains__(self, key):
+            return key in self._vocab
+
+        def __getitem__(self, key):
+            seeds = {"nike": 0, "running": 1, "performance": 2, "sport": 3}
+            np.random.seed(seeds.get(key, 99))
+            return np.random.rand(50).astype(np.float32)
+
+    return MockKeyedVectors()
+
+
+@pytest.fixture
+def sample_resonance_aware_metrics(
+    sample_text_analysis_data,
+    sample_vision_analysis_data,
+    sample_sem_metrics_data,
+):
+    """Fully-populated QuantitativeMetrics with a ResonanceGraph (for Phase 6 tests)."""
+    from models import (
+        QuantitativeMetrics, TextAnalysis, VisionAnalysis, SEMMetrics,
+        ResonanceGraph, SignalNode,
+    )
+    return QuantitativeMetrics(
+        text_data=TextAnalysis(**sample_text_analysis_data),
+        vision_data=VisionAnalysis(**sample_vision_analysis_data),
+        sem_metrics=SEMMetrics(**sample_sem_metrics_data),
+        resonance_graph=ResonanceGraph(
+            nodes=[
+                SignalNode(
+                    entity="Nike", node_type="brand",
+                    momentum_score=0.75, cultural_risk=0.1,
+                    sentiment_signal=0.70, platform_affinity=0.80,
+                    weight=0.378,
+                )
+            ],
+            edges=[],
+            composite_resonance_score=0.378,
+            dominant_signals=["Nike"],
+            resonance_tier="moderate",
+            node_count=1,
+            edge_count=0,
+        ),
+    )
